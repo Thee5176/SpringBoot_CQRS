@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-SpringbootCqrsCommandApplication<springboot_cqrs_command>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.thee5176.record.springboot_cqrs_command.SpringbootCqrsCommandApplication",
+      "projectName": "springboot_cqrs_command",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-SpringbootCqrsQueryApplication<springboot_cqrs_query>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.thee5176.record.springboot_cqrs_query.SpringbootCqrsQueryApplication",
+      "projectName": "springboot_cqrs_query",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}

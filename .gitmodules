@@ -1,0 +1,6 @@
+[submodule "springboot_cqrs_command"]
+	path = springboot_cqrs_command
+	url = ./springboot_cqrs_command/
+[submodule "springboot_cqrs_query"]
+	path = springboot_cqrs_query
+	url = ./springboot_cqrs_query/
