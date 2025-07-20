@@ -84,7 +84,7 @@ docker compose -f springboot_cqrs_command/compose.yaml -f springboot_cqrs_query/
     - Tried 2 ways of compose 2 Docker component at once
 
 ---
-## New Topic Learned
+## New Topic Learned (Meeting & Feedback)
 - Microservice vs Monolith Architecture
     - **Comparison Table:**
         | Feature             | Monolith                                       | Microservice                                     |
@@ -115,6 +115,24 @@ graph TD
     D -- No --> E[Use UUID v4]
     D -- Yes --> F[Use UUID v7 or ULID]
 ```
+
+- Ubitiquous Language and Entity Name Refactoring
+    - Reserved word, Software development vocab
+    - Tips: Master and Transaction Entity, Use Specific language
+
+- Validation Chain
+    - Frontend -> DTO validation -> ... -> Database validation
+    - Validate the same logic in different layer might seems redundant but it help ensure the dataflow quality
+    - Validate and throw data early on also help minimize the exception throw chain which improve throughput time and overall system load
+
+- Master Data management approach
+    - **Enum**
+        - Pros: In-memory storage (faster to read versus making query to database), Ensure Concistency (Can't be change from user side)
+        - Cons: Static Hardcoded Datastorage (changing requred developer to edit the souce code)
+
+    - **Master Entity (Table)**
+        - Pros: Dynamic Datastorage (make change on dataset can be done in user side)
+        - Cons: Consistency Issue (data is manipulatable via query)
 
 # Agile vs Waterfall Development Approach
 
@@ -202,22 +220,3 @@ Agile PLCM is **iterative and incremental**. Rather than planning every detail u
 - May struggle with projects requiring strict compliance or fixed budgets.
 
 ---
-
-- Ubitiquous Language and Entity Name Refactoring
-    - Reserved word, Software development vocab
-    - Tips: Master and Transaction Entity, Use Specific language
-
-- Validation Chain
-    - Frontend -> DTO validation -> ... -> Database validation
-    - Validate the same logic in different layer might seems redundant but it help ensure the dataflow quality
-    - Validate and throw data early on also help minimize the exception throw chain which improve throughput time and overall system load
-
-- Master Data management approach
-    - **Enum**
-        - Pros: In-memory storage (faster to read versus making query to database), Ensure Concistency (Can't be change from user side)
-        - Cons: Static Hardcoded Datastorage (changing requred developer to edit the souce code)
-
-    - **Master Entity (Table)**
-        - Pros: Dynamic Datastorage (make change on dataset can be done in user side)
-        - Cons: Consistency Issue (data is manipulatable via query)
-
