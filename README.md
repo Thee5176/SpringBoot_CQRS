@@ -4,9 +4,9 @@
 1. Requirement and Function Analysis
 2. Scope Management
 3. Design and Diagram
-4. 
-5.
-6.
+4. Development Practice and Planning
+5. Development (Trial & Error with new technologies)
+6. Documentation (new Topic Learned during Development and Feedback)
 
 ## Development Principle
 - Follows Top-Down Software Development Approach: UI Design -> DB Design -> Module Design
