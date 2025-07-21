@@ -42,46 +42,52 @@ docker compose build --no-cache
 docker compose up -d
 ```
 ---
-## New Technology
+## New Technology Used (Trial & Error)
 - Git Flow, Git Pull Request, Git Issues and Git Submodule
     - manage local branch according to best practice branching strategy [GitFlow]
-    - review every feature before merge branch with Git Pull Request [Git Pull Request]
-    - Share knowledger/Take note on development process with Git Issues [Git Issues]
-    - Manage aggregate project with more than 1 directory atomically [Git Submodule]
+    - review change before merge branch with Git Pull Request [Git Pull Request](https://github.com/pulls?q=is%3Apr+author%3AThee5176+archived%3Afalse+repository%3Bspringboot*)
+    - Manage aggregate project that separate each git history [Git Submodule](https://github.com/Thee5176/SpringBoot_CQRS/tree/main)
     - Reference: [Git実践入門](https://gihyo.jp/book/2014/978-4-7741-6366-6)
 
-- Sourcery.ai - Pull Request Review
-    - AI-generated change review message
-    - Code suggestion
+- Github Workflow
+    - set up continuous integration for verify building process
+    - [Command Unit Workflow](https://github.com/Thee5176/springboot_cqrs_command/actions/workflows/testrun.yaml)
+    - [Query Unit Build Workflow](https://github.com/Thee5176/springboot_cqrs_query/actions/workflows/testrun.yaml)
+    - [Deployment Workflow](https://github.com/Thee5176/SpringBoot_CQRS/actions/workflows/testrun.yaml)
 
-- SonarQube - Pull Request Code Quality Gate
-    - CI deployment testing workflow
-    - Check test coverage
+- Sourcery.ai - Pull Request Review Service
+    - AI-generated change review guideline
+    - create code suggestion [Example PR Review Message](https://github.com/Thee5176/springboot_cqrs_command/pull/9#issuecomment-3092684740)
+    - source: [Sourcery AI](https://sourcery.ai/)
+
 - Flyway 
-    - 
- 
+    - set up Flyway database migration service in [pom.xml](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/pom.xml#L162)
+    - manage database version [source/main/resources/db/migrations](https://github.com/Thee5176/springboot_cqrs_command/tree/develop/src/main/resources/db/migration)
+    - source: [Spring Doc](https://docs.spring.io/spring-boot/how-to/data-initialization.html#howto.data-initialization.migration-tool.flyway)
+
 - JOOQ
     - Top-Down Development process with JOOQ Codegen
-        - Design the Database with dbml language
-        - Create
- 
-    - 
+        - Design the Database with dbml language [DB Design Document](https://dbdocs.io/theerapong5176/Springboot_CQRS?view=relationships)
+        - Generate DDL script from [dbdiagram.io](https://dbdiagram.io/)
+        - Setup JOOQ Codegen dependency with [pom.xml](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/pom.xml#L175)
+        - source: [JOOQ Document](https://www.jooq.org/doc/latest/manual/code-generation/codegen-execution/codegen-maven/)
+
 - ModelMapper
-    - Customization DTO-Entity Mapping
-    - 
+    - set up ModelMapper in [pom.xml](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/pom.xml#L78)
+    - config custom DTO [ModelMapperConfig](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/config/ModelMapperConfig.java)
+    - source: [ModelMapper Document](https://modelmapper.org/getting-started/)
  
-- Behaviour Driven Development (BDD) Testing 3 Step Process:
-    1. Establish testing data
-    2. ARun the Test subject
-    3. Check result from step 2
+- Arrange-Action-Assert Testing Process:
+    1. Arrange - Establish testing data
+    2. Action - Run the Test subject
+    3. Assert - Check the desired behaviour result from test subject
   
       
 - Unit Test and Integration Test
-  - **Unit test** - check real output of each internal code component (JUnit)
-  - **Integration test** - check for integration call of other function and mock the output (Mockito)
+  - **Unit test** - check real output of each internal code component with [JUnit](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/test/java/com/thee5176/ledger_command/Application/dto/CreateLedgerDTOTest.java)
+  - **Integration test** - check for integration call of other function and mock the output with [Mockito](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/test/java/com/thee5176/ledger_command/Domain/service/LedgerCommandServiceTest.java)
   
-- Docker Merge Compose file
-    - Tried 2 ways of compose 2 Docker component at once
+- [Docker Merge Compose file](https://github.com/Thee5176/SpringBoot_CQRS/blob/main/compose.yaml)
 
 ---
 ## New Topic Learned (Meeting & Feedback)
