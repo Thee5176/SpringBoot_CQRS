@@ -34,20 +34,20 @@ jobs:
           chmod +x mvnw
           ./mvnw flyway:migrate
           ./mvnw clean package -DskipTests
-        working-directory: ./ledger_cqrs_unit
+        working-directory: ./springboot_cqrs_command
 
       - name: Build Query Unit
         run: |
           chmod +x mvnw
           ./mvnw clean package -DskipTests
-        working-directory: ./ledger_cqrs_unit/springboot_cqrs_query
+        working-directory: ./springboot_cqrs_query
 
       - name: Start All Services
         run: |
           docker compose build --no-cache
           docker compose up -d
-        working-directory: ./ledger_cqrs_unit
+        working-directory: ./SpringBoot_CQRS
 
       - name: Verify services are running
         run: docker ps
-        working-directory: ./ledger_cqrs_unit
+        working-directory: ./SpringBoot_CQRS
