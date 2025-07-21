@@ -25,12 +25,17 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Set up DB and build Command Unit
+      - name: Set up DB
         run: |
           docker compose up postgres -d --build
-          # Wait for PostgreSQL to be ready
-          sleep 10
-          cd springboot_cqrs_command
+          until docker exec postgres-cqrs-db pg_isready; do
+            sleep 2
+            done
+          echo "PostgreSQL is ready!"
+        working-directory: ./SpringBoot_CQRS
+      
+      - name: build Command Unit
+        run: |
           chmod +x mvnw
           ./mvnw flyway:migrate
           ./mvnw clean package -DskipTests
