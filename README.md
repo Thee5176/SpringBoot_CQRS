@@ -24,8 +24,8 @@ git clone https://github.com/Thee5176/springboot_cqrs_query springboot_cqrs_quer
 #2 make migration, build process
 
 ##2.1 Command Unit: spin up postgres container and set up DB
-cd springboot_cqrs_command
 docker compose up postgres -d --build
+cd springboot_cqrs_command
 chmod +x mvnw
 ./mvnw flyway:migrate
 ./mvnw clean package -DskipTests
@@ -38,8 +38,8 @@ chmod +x mvnw
 cd ..
 
 #3 Start All Service
-docker compose -f springboot_cqrs_command/compose.yaml -f springboot_cqrs_query/compose.yaml build --no-cache
-docker compose -f springboot_cqrs_command/compose.yaml -f springboot_cqrs_query/compose.yaml up -d
+docker compose build --no-cache
+docker compose up -d
 ```
 ---
 ## New Technology
