@@ -16,10 +16,8 @@
 ## Run Process
 ```bash
 #1 Prepare directory and clone from github
-mkdir ledger_cqrs_unit
-cd ledger_cqrs_unit
-git clone https://github.com/Thee5176/springboot_cqrs_command springboot_cqrs_command
-git clone https://github.com/Thee5176/springboot_cqrs_query springboot_cqrs_query
+git clone --recurse-submodules -j2 https://github.com/Thee5176/SpringBoot_CQRS
+cd SpringBoot_CQRS
 
 #2 make migration, build process
 
@@ -161,28 +159,28 @@ graph TD
 
  ## Team Structure and Collaboration  
     
-> ### **Agile**
->    Agile development thrives in **flat organizational structures** where every team member is encouraged to actively contribute ideas. Each person works autonomously on their tasks, and collaboration happens through **short sprints** (periodic work intervals). At the end of each sprint, team members share progress, discuss feedback, and adapt their approaches for the next cycle.
-> - **Advantages:**
+   ### **Agile**
+   Agile development thrives in **flat organizational structures** where every team member is encouraged to actively contribute ideas. Each person works autonomously on their tasks, and collaboration happens through **short sprints** (periodic work intervals). At the end of each sprint, team members share progress, discuss feedback, and adapt their approaches for the next cycle.
+  - **Advantages:**
       - Encourages creativity and innovation by allowing everyone to present ideas.
       - Rapid feedback loops enable continuous improvement.
       - Increases team ownership of the project.
->   
->  - **Challenges:**
+   
+  - **Challenges:**
   - **Skill disparity can reduce overall efficiency.** If team members have significant differences in technical expertise, frequent information sharing may slow down progress.
   - The time cost of regular meetings and sprint reviews can be high.
     
    ---
     
->   ### **Waterfall**
->   Waterfall development is well-suited for **hierarchical structures** where team members have varying technical skill levels. In this approach, experienced team leads or architects design the system upfront, assign tasks according to skill levels, and guide the less experienced members.
->   
->   - **Advantages:**
+   ### **Waterfall**
+   Waterfall development is well-suited for **hierarchical structures** where team members have varying technical skill levels. In this approach, experienced team leads or architects design the system upfront, assign tasks according to skill levels, and guide the less experienced members.
+  
+  - **Advantages:**
       - Clear leadership ensures structured decision-making.
       - Reduces confusion for team members with less technical knowledge.
       - Well-defined roles and responsibilities prevent duplication of work.
     
->   - **Challenges:**
+   - **Challenges:**
       - Limited opportunity for lower-level team members to contribute ideas early.
       - Can be inflexible when project requirements change mid-development.
 
@@ -192,7 +190,7 @@ graph TD
 ## Project Lifecycle Management (PLCM)
 
 ### **Waterfall**
-Waterfall requires **comprehensive upfront planning**. Every phase — requirements gathering, system design, implementation, testing, and deployment — is completed sequentially. Documentation and design are created early and often follow a **V-Model**:
+Waterfall requires **comprehensive upfront planning**. Every phase — requirements gathering, system design, implementation, testing, and deployment — is completed sequentially. Documentation and design are created early and often follow  **V-Model**:
 - **V-Model Overview:** Each development stage (on the left side of the "V") has a corresponding testing stage (on the right side). For example, requirements are validated by acceptance tests, design by system tests, and so forth.
 
 **Pros:**
