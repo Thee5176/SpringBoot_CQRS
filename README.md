@@ -12,8 +12,7 @@
 - Follows Top-Down Software Development Approach: UI Design -> DB Design -> Module Design
 - Git Best Practice with "[A successful Git branching model](https://nvie.com/posts/a-successful-git-branching-model/)"
 
----
-## Run Process
+## Install and Run Process
 ```bash
 #1 Prepare directory and clone from github
 git clone --recurse-submodules -j2 https://github.com/Thee5176/SpringBoot_CQRS
@@ -39,7 +38,10 @@ cd ..
 docker compose build --no-cache
 docker compose up -d
 ```
----
+
+## Functionality
+1. 
+
 ## New Technology Used (Trial & Error)
 - Git Flow, Git Pull Request, Git Issues and Git Submodule
     - manage local branch according to best practice branching strategy [GitFlow]
@@ -82,12 +84,11 @@ docker compose up -d
   
       
 - Unit Test and Integration Test
-  - **Unit test** - check real output of each internal code component with [JUnit](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/test/java/com/thee5176/ledger_command/Application/dto/CreateLedgerDTOTest.java)
+  - **Unit test** - check real output of each internal code component with [JUnit](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/test/java/com/thee5176/ledger_command/Application/dto/LedgersEntryTest.java)
   - **Integration test** - check for integration call of other function and mock the output with [Mockito](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/test/java/com/thee5176/ledger_command/Domain/service/LedgerCommandServiceTest.java)
   
 - [Docker Merge Compose file](https://github.com/Thee5176/SpringBoot_CQRS/blob/main/compose.yaml)
 
----
 ## New Topic Learned (Meeting & Feedback)
 - Microservice vs Monolith Architecture
     - **Comparison Table:**
@@ -111,14 +112,14 @@ docker compose up -d
         - **UUID v4**: Use in distributed systems where keys must be globally unique but order is not important. The high randomness prevents guessability. Can cause DB index fragmentation.
         - **ULID/UUID v7**: Ideal for distributed systems requiring globally unique, time-sortable keys. This improves database insert performance by preventing index fragmentation. UUID v7 is the modern IETF standard.
     - **Decision Flowchart:**
-```mermaid
-graph TD
-    A[Start: Choose a Primary Key] --> B{Need globally unique ID?}
-    B -- No --> C[Use Integer/BigInt]
-    B -- Yes --> D{Need time-sortable keys for performance/ordering?}
-    D -- No --> E[Use UUID v4]
-    D -- Yes --> F[Use UUID v7 or ULID]
-```
+        ```mermaid
+        graph TD
+            A[Start: Choose a Primary Key] --> B{Need globally unique ID?}
+            B -- No --> C[Use Integer/BigInt]
+            B -- Yes --> D{Need time-sortable keys for performance/ordering?}
+            D -- No --> E[Use UUID v4]
+            D -- Yes --> F[Use UUID v7 or ULID]
+        ```
 
 - Ubitiquous Language and Entity Name Refactoring
     - Reserved word, Software development vocab
@@ -137,90 +138,3 @@ graph TD
     - **Master Entity (Table)**
         - Pros: Dynamic Datastorage (make change on dataset can be done in user side)
         - Cons: Consistency Issue (data is manipulatable via query)
-
-# Agile vs Waterfall Development Approach
-
-## Comparison Table: Agile vs. Waterfall
-
-| **Aspect**              | **Agile**                                                                 | **Waterfall**                                                            |
-|-------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| **Team Structure**      | Flat, collaborative, everyone contributes ideas.                          | Hierarchical, with leaders assigning tasks based on skill level.         |
-| **Planning Approach**   | Minimal upfront planning, evolves during sprints.                         | Extensive upfront planning with fixed phases.                            |
-| **Workflow**            | Iterative and incremental (short sprints).                                | Sequential phases (requirements → design → implementation → testing).    |
-| **Flexibility**         | Highly adaptable to changing requirements.                                | Rigid, changes are costly after planning is complete.                    |
-| **Documentation**       | Lightweight, focuses on working software over documentation.              | Heavy documentation and design specifications required.                  |
-| **Skill Dependency**    | Works best when team members have similar skill levels.                   | Works well with mixed skill levels under clear leadership.               |
-| **Delivery**            | Delivers small, functional increments early and often.                    | Delivers a complete product at the end of the project lifecycle.         |
-| **Testing**             | Continuous testing integrated into each sprint.                           | Testing occurs late, after implementation.                               |
-| **Customer Feedback**   | Frequent, at the end of each sprint or iteration.                         | Limited feedback until final stages of the project.                      |
-| **Best Suited For**     | Dynamic projects with evolving requirements.                              | Projects with well-defined and stable requirements.                      |
-
----
-
- ## Team Structure and Collaboration  
-    
-   ### **Agile**
-   Agile development thrives in **flat organizational structures** where every team member is encouraged to actively contribute ideas. Each person works autonomously on their tasks, and collaboration happens through **short sprints** (periodic work intervals). At the end of each sprint, team members share progress, discuss feedback, and adapt their approaches for the next cycle.
-  - **Advantages:**
-      - Encourages creativity and innovation by allowing everyone to present ideas.
-      - Rapid feedback loops enable continuous improvement.
-      - Increases team ownership of the project.
-   
-  - **Challenges:**
-  - **Skill disparity can reduce overall efficiency.** If team members have significant differences in technical expertise, frequent information sharing may slow down progress.
-  - The time cost of regular meetings and sprint reviews can be high.
-    
-   ---
-    
-   ### **Waterfall**
-   Waterfall development is well-suited for **hierarchical structures** where team members have varying technical skill levels. In this approach, experienced team leads or architects design the system upfront, assign tasks according to skill levels, and guide the less experienced members.
-  
-  - **Advantages:**
-      - Clear leadership ensures structured decision-making.
-      - Reduces confusion for team members with less technical knowledge.
-      - Well-defined roles and responsibilities prevent duplication of work.
-    
-   - **Challenges:**
-      - Limited opportunity for lower-level team members to contribute ideas early.
-      - Can be inflexible when project requirements change mid-development.
-
-
----
-
-## Project Lifecycle Management (PLCM)
-
-### **Waterfall**
-Waterfall requires **comprehensive upfront planning**. Every phase — requirements gathering, system design, implementation, testing, and deployment — is completed sequentially. Documentation and design are created early and often follow  **V-Model**:
-- **V-Model Overview:** Each development stage (on the left side of the "V") has a corresponding testing stage (on the right side). For example, requirements are validated by acceptance tests, design by system tests, and so forth.
-
-**Pros:**
-- Predictable timelines and deliverables.
-- Clear documentation ensures traceability.
-- Ideal for projects with fixed requirements and minimal expected changes.
-
-**Cons:**
-- Inflexible to changing requirements.
-- Late testing phases can lead to delayed discovery of critical issues.
-- Requires significant time investment before coding even begins.
-
----
-
-### **Agile**
-Agile PLCM is **iterative and incremental**. Rather than planning every detail upfront, the project evolves through **sprints** (typically 1–4 weeks). At the end of each sprint, a potentially shippable product increment is delivered, and feedback is integrated before the next sprint.
-
-**Common Agile Practices:**
-- **Scrum:** Defined roles (Product Owner, Scrum Master, Development Team) with regular sprint reviews and retrospectives.
-- **Kanban:** Visual boards for managing and limiting work in progress (WIP).
-- **Continuous Integration/Continuous Delivery (CI/CD):** Frequent integration and automated deployment pipelines.
-
-**Pros:**
-- Adapts quickly to changing requirements.
-- Delivers value early through incremental releases.
-- Encourages collaboration and customer involvement.
-
-**Cons:**
-- Lack of upfront documentation can create long-term maintenance challenges.
-- Requires a high degree of discipline and communication.
-- May struggle with projects requiring strict compliance or fixed budgets.
-
----
