@@ -34,151 +34,163 @@ cd ..
 docker compose build --no-cache
 docker compose up -d
 ```
+# Highlight Functionality
 
-## Highlight Functionality
+## Springboot Command Service
 
-### Springboot Command Service
+| Feature                      | Description                                                                                                                                                                               | Reference Link                                                                                                                                                         |
+|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Custom Object Mapper         | Configure ModelMapper Beans to customize field mapping between DTO and two Domain Entities                                                                                                | [ModelMapperConfig.java](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/config/ModelMapperConfig.java) |
+| Double Input Validation Logic| - **BalanceCheck**: Validate if sum of "amount" per "balanceType" matches (via custom validation class comparing with BigDecimal.ZERO)<br>- **Unique "Code of Account" Check**: Ensure no duplicates in LedgerItems list using DTO method + Hibernate UniqueElements | - [BalanceCheckValidator.java](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/validation/BalanceCheckValidator.java)<br>- [LedgersEntryDTO.java - unique COA](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/dto/LedgersEntryDTO.java#L37) |
+| Transaction Management      | - **Create Transaction**: Manage create entity transaction incl. aggregated entities<br>- **Replacement Update Transaction**: Upsert logic via Java Stream for update/create/delete steps | - [Create Transaction](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Domain/service/LedgerCommandService.java#L33)<br>- [Update Transaction](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Domain/service/LedgerCommandService.java#L56) |
 
-1. Custom Object Mapper : [Configure ModelMaper Beans to map customize field between DTO and two Domain Entity](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/config/ModelMapperConfig.java)
-2. Double Input Validation Logic
-    - BalanceCheck : Check if sum of "amount" field by each "balanceType" has the same value-> [Realize the validation with Custom Validation class by compare the difference with BigDecimal.ZERO object](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/validation/BalanceCheckValidator.java)
-    - Unique "Code of Account" Check : Check if each item in list of LedgerItems has no duplicate "code of account" field [Realize the validation with DTO method that extract coa from LedgerItems's "coa" field and use UniqueElements from Hibernate](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/dto/LedgersEntryDTO.java#L37)
-3. Transaction Management
-    - Create Transaction : [Manage Create Entity Transaction along with its aggregated Entity](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Domain/service/LedgerCommandService.java#L33)
-        ```mermaid
-        sequenceDiagram
-            actor User
-            participant Controller as LedgerController
-            participant Service as LedgerCommandService
-            participant Repo as LedgerRepository
-            participant ItemRepo as LedgerItemsRepository
-            participant Mapper as LedgerMapper
-            participant ItemsMapper as LedgerItemsMapper
-            User->>Controller: POST /ledger (CreateLedgerDTO)
-            Controller->>Service: createLedger(CreateLedgerDTO)
-            Service->>Mapper: map(CreateLedgerDTO) -> Ledgers
-            Service->>Repo: createLedger(Ledgers)
-            Service->>ItemsMapper: map(CreateLedgerDTO) -> List<LedgerItems>
-            loop for each LedgerItems
-                Service->>ItemRepo: createLedgerItems(LedgerItems)
-            end
-            Service-->>Controller: (void)
-            Controller-->>User: 200 OK / error
-        ```
-    - Replacement Update Transaction : [Upsert logic with 3 steps Java stream to update data from request into database](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Domain/service/LedgerCommandService.java#L56)
-        ```mermaid
-        sequenceDiagram
-            actor User
-            participant Controller as LedgerController
-            participant Service as LedgerCommandService
-            participant Mapper as LedgerItemsMapper
-            participant Repo as LedgerItemRepository
-            User->>Controller: POST /ledger (CreateLedgerDTO)
-            Controller->>Service: updateLedger(LedgerEntryDTO)
-            Service->>Repo: getLedgerItemsByLedgerId(ledgerEntryDTO.id)
-            Service->>Mapper: map(ledgerEntryDTO)
-            Service->>Service: Map existing items by COA
-            Service->>Service: For each update item:
-            alt COA exists
-                Service->>Repo: updateLedgerItems(item)
-            else COA does not exist
-                Service->>Repo: createLedgerItems(item)
-            end
-            Service->>Service: For each existing item not in update list
-            Service->>Repo: deleteLedgerItems(item.id)
-        ```
-        
-    ### Springboot Query Service
-1. Join Table Query with JOOQ : [Tackle N+1 Problem in Repository Layer with JOIN query](https://github.com/Thee5176/springboot_cqrs_query/blob/develop/src/main/java/com/thee5176/ledger_query/Infrastructure/repository/LedgersRepository.java#L57)
-    ```mermaid
-    sequenceDiagram
-        participant Service
-        participant JOOQContext
-        participant LedgersTable
-        participant LedgerItemsTable
-    
-        Service->>JOOQContext: fetchDtoContext()
-        JOOQContext->>LedgersTable: from(Tables.LEDGERS)
-        JOOQContext->>LedgerItemsTable: leftJoin(Tables.LEDGER_ITEMS)
-        JOOQContext->>LedgerItemsTable: on(LEDGERS.ID = LEDGER_ITEMS.LEDGER_ID)
-        JOOQContext->>LedgersTable: where(LEDGERS.ID = id)
-        JOOQContext->>Service: fetchInto(LedgersQueryOutput.class)
-        Service-->>Service: return List<LedgersQueryOutput>
+### Sequence Diagrams for Transaction Management
 
-    ```
+**Create Transaction**
+```mermaid
+sequenceDiagram
+    actor User
+    participant Controller as LedgerController
+    participant Service as LedgerCommandService
+    participant Repo as LedgerRepository
+    participant ItemRepo as LedgerItemsRepository
+    participant Mapper as LedgerMapper
+    participant ItemsMapper as LedgerItemsMapper
 
-2. Flatten Data Extraction Transaction : [Tackle N+1 Problem in Service Layer by create Map that corresponse Id with Entity Object(remove recursive query)](https://github.com/Thee5176/SpringBoot_CQRS_Query/blob/develop/src/main/java/com/thee5176/ledger_query/Domain/service/LedgersQueryService.java#L24)
-    ```mermaid
-        sequenceDiagram
-            participant Controller
-            participant LedgersRepository
-            participant ModelMapper
-            participant Logger
-        
-            Controller->>LedgersRepository: getAllLedgersDTO()
-            LedgersRepository-->>Controller: List<LedgersQueryOutput>
-            Controller->>Logger: log.info(queryOutputs)
-            Controller->>ModelMapper: map each LedgersQueryOutput to GetLedgerResponse
-            ModelMapper-->>Controller: List<GetLedgerResponse>
-            Controller->>ModelMapper: map and group by ledgerId to LedgerItemsAggregate
-            ModelMapper-->>Controller: Map<ledgerId, List<LedgerItemsAggregate>>
-            Controller->>Controller: setLedgerItems() for each GetLedgerResponse
-            Controller-->>Controller: return List<GetLedgerResponse>
-    ```
+    User->>Controller: POST /ledger (CreateLedgerDTO)
+    Controller->>Service: createLedger(CreateLedgerDTO)
+    Service->>Mapper: map(CreateLedgerDTO) -> Ledgers
+    Service->>Repo: createLedger(Ledgers)
+    Service->>ItemsMapper: map(CreateLedgerDTO) -> List<LedgerItems>
+    loop for each LedgerItems
+        Service->>ItemRepo: createLedgerItems(LedgerItems)
+    end
+    Service-->>Controller: (void)
+    Controller-->>User: 200 OK / error
+```
 
-### Fontend React Form
-1. Dynamic Component Combination: follow Atomic Design Patterns that breakdown complex component into simpler and easier to manage.
-    <img width="3824" height="1860" alt="image" src="https://github.com/user-attachments/assets/04133e47-ed58-4533-80f7-550c15ee9bc4" />
+**Replacement Update Transaction**
+```mermaid
+sequenceDiagram
+    actor User
+    participant Controller as LedgerController
+    participant Service as LedgerCommandService
+    participant Mapper as LedgerItemsMapper
+    participant Repo as LedgerItemRepository
 
-2. Dynamically add new LedgerItems input Field: [LedgerItemInputField](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/index.tsx), [LedgerItemsFormTable](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/99129f8f92ce6f16994f2c5bc34de9fb2cbabeb6/src/components/LedgerItemsFormTable.tsx)
-   <img width="4748" height="1684" alt="image" src="https://github.com/user-attachments/assets/3de1e39d-5f7d-490a-82ad-9aa172664620" />
+    User->>Controller: POST /ledger (CreateLedgerDTO)
+    Controller->>Service: updateLedger(LedgerEntryDTO)
+    Service->>Repo: getLedgerItemsByLedgerId(ledgerEntryDTO.id)
+    Service->>Mapper: map(ledgerEntryDTO)
+    Service->>Service: Map existing items by COA
+    Service->>Service: For each update item:
+    alt COA exists
+        Service->>Repo: updateLedgerItems(item)
+    else COA does not exist
+        Service->>Repo: createLedgerItems(item)
+    end
+    Service->>Service: For each existing item not in update list
+    Service->>Repo: deleteLedgerItems(item.id)
+```
+---
 
-3. Fetch "Code of Account" select option field from Query Service: [Fetch COA function](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/CoaField.tsx)
-    <img width="4076" height="3340" alt="image" src="https://github.com/user-attachments/assets/b30bbb36-a320-4f43-8d8d-2c7dca4c5596" />
+## Springboot Query Service
 
-4. Integrate React Hook Form for manage form submit function: [useForm Hook](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx)
-    - More Information: [Confluence Report Page](https://thee5176.atlassian.net/wiki/spaces/~7120207a78457b1be14d1eb093ee37135d9fb6/pages/68026372/React+MUI#3.-Form-handling-with-React-Hook-Form)
+| Feature                     | Description                                                                                                    | Reference Link                                                                                                                               |
+|-----------------------------|----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| Join Table Query with JOOQ  | Tackle N+1 Problem in Repository Layer using JOIN query                                                       | [LedgersRepository.java](https://github.com/Thee5176/springboot_cqrs_query/blob/develop/src/main/java/com/thee5176/ledger_query/Infrastructure/repository/LedgersRepository.java#L57) |
+| Flatten Data Extraction     | Tackle N+1 Problem in Service Layer by creating Map of Id to Entity (removes recursive querying)               | [LedgersQueryService.java](https://github.com/Thee5176/SpringBoot_CQRS_Query/blob/develop/src/main/java/com/thee5176/ledger_query/Domain/service/LedgersQueryService.java#L24)       |
 
-5. Validation Condition and Error Message
-    ```mermaid
-    sequenceDiagram
-        actor User
-        participant LedgerEntryForm
-        participant ErrorAlert
-        User->>LedgerEntryForm: Fill and submit form
-        LedgerEntryForm->>LedgerEntryForm: Validate fields (react-hook-form)
-        alt Validation fails
-            LedgerEntryForm->>ErrorAlert: Display error messages
-        else Validation passes
-            LedgerEntryForm->>LedgerEntryForm: Send data to backend
-            LedgerEntryForm->>LedgerEntryForm: Reset form fields
-        end
-    ```
+### Join Table Query with JOOQ - Sequence Diagram
+```mermaid
+sequenceDiagram
+    participant Service
+    participant JOOQContext
+    participant LedgersTable
+    participant LedgerItemsTable
 
-6. Reusable Validation Error Component: [Example Validation](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx)
-   <img width="4428" height="2040" alt="image" src="https://github.com/user-attachments/assets/c10acabc-9434-4bc7-912d-6a02e190df8a" />
+    Service->>JOOQContext: fetchDtoContext()
+    JOOQContext->>LedgersTable: from(Tables.LEDGERS)
+    JOOQContext->>LedgerItemsTable: leftJoin(Tables.LEDGER_ITEMS)
+    JOOQContext->>LedgerItemsTable: on(LEDGERS.ID = LEDGER_ITEMS.LEDGER_ID)
+    JOOQContext->>LedgersTable: where(LEDGERS.ID = id)
+    JOOQContext->>Service: fetchInto(LedgersQueryOutput.class)
+    Service-->>Service: return List<LedgersQueryOutput>
+```
 
-## Development Principle
-1. Follows Top-Down Software Development Approach:
-    - DB Design -> Module Design
-2. Git Best Practice with "[A successful Git branching model](https://nvie.com/posts/a-successful-git-branching-model/)"
-    - "main" branch
-        - use this branch in order to: deploy new feature 
-        - only merge back when: codebase has been confirmed and ready to be deploy
-    - "develop" branch
-        - branch from "main"
-        - use this branch in order to: manage development of multiple feature at once
-        - only merge back when: codebase has been confirmed and ready to be deploy
-    - "feature" branch
-        - branch from "develop"
-        - use this branch in order to: manage local development
-        - only merge back when: -NO RESTRICTION- but recommend to manage atomic change per git commit
-        - **can open multiple branch at once**
-    - "hotfix" branch
-        - branch from "main"
-        - use this branch in order to: 
-        - only merge back when: bug has been fixed
-        - **can open multiple branch at once**
+### Flatten Data Extraction Transaction - Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant Controller
+    participant LedgersRepository
+    participant ModelMapper
+    participant Logger
+
+    Controller->>LedgersRepository: getAllLedgersDTO()
+    LedgersRepository-->>Controller: List<LedgersQueryOutput>
+    Controller->>Logger: log.info(queryOutputs)
+    Controller->>ModelMapper: map each LedgersQueryOutput to GetLedgerResponse
+    ModelMapper-->>Controller: List<GetLedgerResponse>
+    Controller->>ModelMapper: map and group by ledgerId to LedgerItemsAggregate
+    ModelMapper-->>Controller: Map<ledgerId, List<LedgerItemsAggregate>>
+    Controller->>Controller: setLedgerItems() for each GetLedgerResponse
+    Controller-->>Controller: return List<GetLedgerResponse>
+```
+
+---
+
+## Frontend React Form
+
+| Feature                     | Description                                                                                                  | Reference Link                                                                                                                     |
+|----------------------------|--------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| Dynamic Component Combination | Use Atomic Design Pattern to break down complex components into simpler, maintainable ones                        | ![Atomic Design](https://github.com/user-attachments/assets/04133e47-ed58-4533-80f7-550c15ee9bc4)                                  |
+| Dynamically Add LedgerItems | Dynamically add new LedgerItems input fields                                                                 | - [LedgerItemInputField.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/index.tsx)<br>- [LedgerItemsFormTable.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/99129f8f92ce6f16994f2c5bc34de9fb2cbabeb6/src/components/LedgerItemsFormTable.tsx)<br>![Dynamic LedgerItems](https://github.com/user-attachments/assets/3de1e39d-5f7d-490a-82ad-9aa172664620) |
+| Fetch COA Select Field      | Fetch "Code of Account" select options from Query Service                                                    | [CoaField.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/CoaField.tsx) <br>![COA Fetch](https://github.com/user-attachments/assets/b30bbb36-a320-4f43-8d8d-2c7dca4c5596) |
+| React Hook Form Integration | Manage form submit function using React Hook Form's useForm hook                                            | [LedgerEntryForm.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx)<br>- [Confluence Report](https://thee5176.atlassian.net/wiki/spaces/~7120207a78457b1be14d1eb093ee37135d9fb6/pages/68026372/React+MUI#3.-Form-handling-with-React-Hook-Form) |
+| Validation & Error Message  | Validate input fields and display error messages before submission                                            | [Validation Example](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx)  |
+| Reusable Validation Component | Centralize validation error message display                                                                | [Error Message Component](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/ErrorAlert.tsx) <br>![Validation UI](https://github.com/user-attachments/assets/c10acabc-9434-4bc7-912d-6a02e190df8a) |
+
+### Validation Condition and Error Message - Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant LedgerEntryForm
+    participant ErrorAlert
+
+    User->>LedgerEntryForm: Fill and submit form
+    LedgerEntryForm->>LedgerEntryForm: Validate fields (react-hook-form)
+    alt Validation fails
+        LedgerEntryForm->>ErrorAlert: Display error messages
+    else Validation passes
+        LedgerEntryForm->>LedgerEntryForm: Send data to backend
+        LedgerEntryForm->>LedgerEntryForm: Reset form fields
+    end
+
+```
+---
+
+# Development Principle
+
+| Branch Type | Branch From | Usage                                 | When to Merge Back                                   | Notes                         |
+|-------------|-------------|-------------------------------------|-----------------------------------------------------|-------------------------------|
+| main        | —           | For deploying new features           | Only merge back when codebase is confirmed & ready | Deployment branch              |
+| develop     | main        | Manage development of multiple features| Only merge back when codebase is confirmed & ready | Integration branch            |
+| feature     | develop     | Local development & atomic commits   | No restrictions; multiple feature branches allowed | Parallel feature development  |
+| hotfix      | main        | Bug fixes                           | Merge back once bug is fixed                         | Multiple hotfix branches allowed |
+
+**Additional Notes:**
+
+- Follow a Top-Down Software Development Approach:  
+  DB Design → Module Design → Implementation
+- Use Git best practices as per "[A successful Git branching model](https://nvie.com/posts/a-successful-git-branching-model/)"
+- Manage parallel branches with clear merge strategy for stability
+
+---
+
+If you want, I can also provide this as a markdown file content ready to save locally.
+
 
 ## System Design
 
