@@ -1,21 +1,68 @@
 # SpringBoot_CQRS
 
-## RoadMap
-1. Requirement and Function Analysis
-2. Scope Management
-3. Design and Diagram
-4. Development Practice and Planning
-5. Development (Trial & Error with new technologies)
-6. Documentation (new Topic Learned during Development and Feedback)
+## Table of Content
+1. [Highlight Function](#Highlight-Function)
+2. [Development Principle](#Development-Principle)
+3. [System Design](#System-Design)
+4. [Install and Run Process](#Install-and-Run-Process)
+5. [New Technologies Used](#New-Technologies-Used) (Trial & Error with new technologies)
+6. [New Topic Learned](#New-Topic-Learned) (Knowledge Learned during Development and Feedback)
 
 ## Development Principle
-- Follows Top-Down Software Development Approach: UI Design -> DB Design -> Module Design
-- Git Best Practice with "[A successful Git branching model](https://nvie.com/posts/a-successful-git-branching-model/)"
+1. Follows Top-Down Software Development Approach:
+    - DB Design -> Module Design
+2. Git Best Practice with "[A successful Git branching model](https://nvie.com/posts/a-successful-git-branching-model/)"
+    - "main" branch
+        - use this branch in order to: deploy new feature 
+        - only merge back when: codebase has been confirmed and ready to be deploy
+    - "develop" branch
+        - branch from "main"
+        - use this branch in order to: manage development of multiple feature at once
+        - only merge back when: codebase has been confirmed and ready to be deploy
+    - "feature" branch
+        - branch from "develop"
+        - use this branch in order to: manage local development
+        - only merge back when: -NO RESTRICTION- but recommend to manage atomic change per git commit
+        - **can open multiple branch at once**
+    - "hotfix" branch
+        - branch from "main"
+        - use this branch in order to: 
+        - only merge back when: bug has been fixed
+        - **can open multiple branch at once**
+
+## System Design
+
+### Front-end: UI Design（Wireframe + Component Planning）
+
+### Back-end: DB and Module Design
+- Version 1:
+    - DB Design:
+        - Table that save values of Accounting Transaction as "Transaction" Table
+        - Table that save values of Accounting Entries(Transaction by each Code of Account) as "Entries" Table
+    - Module Design:
+        - Command and Query Service hosted separately from each other.
+        - Separate DB module to take advantage of both SQL (reliable write: predefined schema and ACID properties) and NoSQL(faster read: simple query and BASE properties) database.
+        - CQRS Pattern with Kafka Message Service and Eventual Consistency Service between 2 Database
+        - Repository library: 
+            - JOOQ on the Command side for thorough　customizable ORM mapping.
+      <img src="https://github.com/user-attachments/assets/7939db8d-d2a2-48ef-97fc-14958194fedc" width="8968" height="3360" alt="image">
+
+
+- Version 2:
+    - DB Design:
+        - Change "Transaction" Table to "Ledgers"
+        - Chagne "Entry" Table to "LederItems"
+    - Module Design:
+        - Combine Database and use only SQL Database (Comment from meeting: separate DB module is too redundant to user scale)
+        - Remove Message Service and Eventual Consistency Service as for the usage of one DB
+        - Repository library:
+            -  Both use the same JOOQ for development process consistency.
+      <img width="9240" height="3448" alt="image" src="https://github.com/user-attachments/assets/58f461fb-76e1-4a7c-a0bf-4e5d08f1cf9a" />
 
 ## Install and Run Process
 ```bash
 #1 Prepare directory and clone from github
-git clone --recurse-submodules -j2 https://github.com/Thee5176/SpringBoot_CQRS
+git clone --recurse-submodules -j3 https://github.com/Thee5176/SpringBoot_CQRS
 cd SpringBoot_CQRS
 
 #2 make migration, build process
@@ -39,8 +86,127 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
-## Functionality
-1. 
+## Highlight Functionality
+
+### Springboot Command Service
+
+1. Custom Object Mapper : [Configure ModelMaper Beans to map customize field between DTO and two Domain Entity](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/config/ModelMapperConfig.java)
+2. Double Input Validation Logic
+    - BalanceCheck : Check if sum of "amount" field by each "balanceType" has the same value-> [Realize the validation with Custom Validation class by compare the difference with BigDecimal.ZERO object](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/validation/BalanceCheckValidator.java)
+    - Unique "Code of Account" Check : Check if each item in list of LedgerItems has no duplicate "code of account" field [Realize the validation with DTO method that extract coa from LedgerItems's "coa" field and use UniqueElements from Hibernate](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/dto/LedgersEntryDTO.java#L37)
+3. Transaction Management
+    - Create Transaction : [Manage Create Entity Transaction along with its aggregated Entity](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Domain/service/LedgerCommandService.java#L33)
+        ```mermaid
+        sequenceDiagram
+            actor User
+            participant Controller as LedgerController
+            participant Service as LedgerCommandService
+            participant Repo as LedgerRepository
+            participant ItemRepo as LedgerItemsRepository
+            participant Mapper as LedgerMapper
+            participant ItemsMapper as LedgerItemsMapper
+            User->>Controller: POST /ledger (CreateLedgerDTO)
+            Controller->>Service: createLedger(CreateLedgerDTO)
+            Service->>Mapper: map(CreateLedgerDTO) -> Ledgers
+            Service->>Repo: createLedger(Ledgers)
+            Service->>ItemsMapper: map(CreateLedgerDTO) -> List<LedgerItems>
+            loop for each LedgerItems
+                Service->>ItemRepo: createLedgerItems(LedgerItems)
+            end
+            Service-->>Controller: (void)
+            Controller-->>User: 200 OK / error
+        ```
+    - Replacement Update Transaction : [Upsert logic with 3 steps Java stream to update data from request into database](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Domain/service/LedgerCommandService.java#L56)
+        ```mermaid
+        sequenceDiagram
+            actor User
+            participant Controller as LedgerController
+            participant Service as LedgerCommandService
+            participant Mapper as LedgerItemsMapper
+            participant Repo as LedgerItemRepository
+            User->>Controller: POST /ledger (CreateLedgerDTO)
+            Controller->>Service: updateLedger(LedgerEntryDTO)
+            Service->>Repo: getLedgerItemsByLedgerId(ledgerEntryDTO.id)
+            Service->>Mapper: map(ledgerEntryDTO)
+            Service->>Service: Map existing items by COA
+            Service->>Service: For each update item:
+            alt COA exists
+                Service->>Repo: updateLedgerItems(item)
+            else COA does not exist
+                Service->>Repo: createLedgerItems(item)
+            end
+            Service->>Service: For each existing item not in update list
+            Service->>Repo: deleteLedgerItems(item.id)
+        ```
+        
+    ### Springboot Query Service
+1. Join Table Query with JOOQ : [Tackle N+1 Problem in Repository Layer with JOIN query](https://github.com/Thee5176/springboot_cqrs_query/blob/develop/src/main/java/com/thee5176/ledger_query/Infrastructure/repository/LedgersRepository.java#L57)
+    ```mermaid
+    sequenceDiagram
+        participant Service
+        participant JOOQContext
+        participant LedgersTable
+        participant LedgerItemsTable
+    
+        Service->>JOOQContext: fetchDtoContext()
+        JOOQContext->>LedgersTable: from(Tables.LEDGERS)
+        JOOQContext->>LedgerItemsTable: leftJoin(Tables.LEDGER_ITEMS)
+        JOOQContext->>LedgerItemsTable: on(LEDGERS.ID = LEDGER_ITEMS.LEDGER_ID)
+        JOOQContext->>LedgersTable: where(LEDGERS.ID = id)
+        JOOQContext->>Service: fetchInto(LedgersQueryOutput.class)
+        Service-->>Service: return List<LedgersQueryOutput>
+
+    ```
+
+2. Flatten Data Extraction Transaction : [Tackle N+1 Problem in Service Layer by create Map that corresponse Id with Entity Object(remove recursive query)](https://github.com/Thee5176/SpringBoot_CQRS_Query/blob/develop/src/main/java/com/thee5176/ledger_query/Domain/service/LedgersQueryService.java#L24)
+    ```mermaid
+        sequenceDiagram
+            participant Controller
+            participant LedgersRepository
+            participant ModelMapper
+            participant Logger
+        
+            Controller->>LedgersRepository: getAllLedgersDTO()
+            LedgersRepository-->>Controller: List<LedgersQueryOutput>
+            Controller->>Logger: log.info(queryOutputs)
+            Controller->>ModelMapper: map each LedgersQueryOutput to GetLedgerResponse
+            ModelMapper-->>Controller: List<GetLedgerResponse>
+            Controller->>ModelMapper: map and group by ledgerId to LedgerItemsAggregate
+            ModelMapper-->>Controller: Map<ledgerId, List<LedgerItemsAggregate>>
+            Controller->>Controller: setLedgerItems() for each GetLedgerResponse
+            Controller-->>Controller: return List<GetLedgerResponse>
+    ```
+
+### Fontend React Form
+1. Dynamic Component Combination: follow Atomic Design Patterns that breakdown complex component into simpler and easier to manage.
+    <img width="3824" height="1860" alt="image" src="https://github.com/user-attachments/assets/04133e47-ed58-4533-80f7-550c15ee9bc4" />
+
+2. Dynamically add new LedgerItems input Field:
+   <img width="4748" height="1684" alt="image" src="https://github.com/user-attachments/assets/3de1e39d-5f7d-490a-82ad-9aa172664620" />
+
+3. Fetch "Code of Account" select option field from Query Service
+    <img width="4076" height="3340" alt="image" src="https://github.com/user-attachments/assets/b30bbb36-a320-4f43-8d8d-2c7dca4c5596" />
+4. Integrate React Hook Form for manage form submit function
+    More Information: [Confluence Report Page](https://thee5176.atlassian.net/wiki/spaces/~7120207a78457b1be14d1eb093ee37135d9fb6/pages/68026372/React+MUI#3.-Form-handling-with-React-Hook-Form)
+
+5. Validation Condition and Error Message
+    ```mermaid
+    sequenceDiagram
+        actor User
+        participant LedgerEntryForm
+        participant ErrorAlert
+        User->>LedgerEntryForm: Fill and submit form
+        LedgerEntryForm->>LedgerEntryForm: Validate fields (react-hook-form)
+        alt Validation fails
+            LedgerEntryForm->>ErrorAlert: Display error messages
+        else Validation passes
+            LedgerEntryForm->>LedgerEntryForm: Send data to backend
+            LedgerEntryForm->>LedgerEntryForm: Reset form fields
+        end
+    ```
+
+6. Reusable Validation Error Component:
+   <img width="4428" height="2040" alt="image" src="https://github.com/user-attachments/assets/c10acabc-9434-4bc7-912d-6a02e190df8a" />
 
 ## New Technology Used (Trial & Error)
 - Git Flow, Git Pull Request, Git Issues and Git Submodule
@@ -87,9 +253,10 @@ docker compose up -d
   - **Unit test** - check real output of each internal code component with [JUnit](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/test/java/com/thee5176/ledger_command/Application/dto/LedgersEntryTest.java)
   - **Integration test** - check for integration call of other function and mock the output with [Mockito](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/test/java/com/thee5176/ledger_command/Domain/service/LedgerCommandServiceTest.java)
   
-- [Docker Merge Compose file](https://github.com/Thee5176/SpringBoot_CQRS/blob/main/compose.yaml)
+- Docker
+    -[Merge Compose file](https://github.com/Thee5176/SpringBoot_CQRS/blob/main/compose.yaml)
 
-## New Topic Learned (Meeting & Feedback)
+## New Topic Learned (During Team Meeting & Feedback)
 - Microservice vs Monolith Architecture
     - **Comparison Table:**
         | Feature             | Monolith                                       | Microservice                                     |
@@ -122,7 +289,7 @@ docker compose up -d
         ```
 
 - Ubitiquous Language and Entity Name Refactoring
-    - Reserved word, Software development vocab
+    - beware of name that is close to Reserved word, Software development vocab
     - Tips: Master and Transaction Entity, Use Specific language
 
 - Validation Chain
