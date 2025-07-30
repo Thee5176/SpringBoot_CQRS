@@ -1,63 +1,12 @@
 # SpringBoot_CQRS
 
 ## Table of Content
-1. [Highlight Function](#Highlight-Function)
-2. [Development Principle](#Development-Principle)
-3. [System Design](#System-Design)
-4. [Install and Run Process](#Install-and-Run-Process)
-5. [New Technologies Used](#New-Technologies-Used) (Trial & Error with new technologies)
-6. [New Topic Learned](#New-Topic-Learned) (Knowledge Learned during Development and Feedback)
-
-## Development Principle
-1. Follows Top-Down Software Development Approach:
-    - DB Design -> Module Design
-2. Git Best Practice with "[A successful Git branching model](https://nvie.com/posts/a-successful-git-branching-model/)"
-    - "main" branch
-        - use this branch in order to: deploy new feature 
-        - only merge back when: codebase has been confirmed and ready to be deploy
-    - "develop" branch
-        - branch from "main"
-        - use this branch in order to: manage development of multiple feature at once
-        - only merge back when: codebase has been confirmed and ready to be deploy
-    - "feature" branch
-        - branch from "develop"
-        - use this branch in order to: manage local development
-        - only merge back when: -NO RESTRICTION- but recommend to manage atomic change per git commit
-        - **can open multiple branch at once**
-    - "hotfix" branch
-        - branch from "main"
-        - use this branch in order to: 
-        - only merge back when: bug has been fixed
-        - **can open multiple branch at once**
-
-## System Design
-
-### Front-end: UI Design（Wireframe + Component Planning）
-
-### Back-end: DB and Module Design
-- Version 1:
-    - DB Design:
-        - Table that save values of Accounting Transaction as "Transaction" Table
-        - Table that save values of Accounting Entries(Transaction by each Code of Account) as "Entries" Table
-    - Module Design:
-        - Command and Query Service hosted separately from each other.
-        - Separate DB module to take advantage of both SQL (reliable write: predefined schema and ACID properties) and NoSQL(faster read: simple query and BASE properties) database.
-        - CQRS Pattern with Kafka Message Service and Eventual Consistency Service between 2 Database
-        - Repository library: 
-            - JOOQ on the Command side for thorough　customizable ORM mapping.
-      <img src="https://github.com/user-attachments/assets/7939db8d-d2a2-48ef-97fc-14958194fedc" width="8968" height="3360" alt="image">
-
-
-- Version 2:
-    - DB Design:
-        - Change "Transaction" Table to "Ledgers"
-        - Chagne "Entry" Table to "LederItems"
-    - Module Design:
-        - Combine Database and use only SQL Database (Comment from meeting: separate DB module is too redundant to user scale)
-        - Remove Message Service and Eventual Consistency Service as for the usage of one DB
-        - Repository library:
-            -  Both use the same JOOQ for development process consistency.
-      <img width="9240" height="3448" alt="image" src="https://github.com/user-attachments/assets/58f461fb-76e1-4a7c-a0bf-4e5d08f1cf9a" />
+1. [install and run process](#install-and-run-process)
+2. [highlight function](#highlight-functionality)
+3. [development principle](#development-principle)
+4. [system design](#system-design)
+5. [new technologies used](#new-technology-used-trial--error)
+6. [new knowedge gained](#new-knowledge-gained-during-team-meeting--feedback)
 
 ## Install and Run Process
 ```bash
@@ -181,13 +130,14 @@ docker compose up -d
 1. Dynamic Component Combination: follow Atomic Design Patterns that breakdown complex component into simpler and easier to manage.
     <img width="3824" height="1860" alt="image" src="https://github.com/user-attachments/assets/04133e47-ed58-4533-80f7-550c15ee9bc4" />
 
-2. Dynamically add new LedgerItems input Field:
+2. Dynamically add new LedgerItems input Field: [LedgerItemInputField](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/index.tsx), [LedgerItemsFormTable](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/99129f8f92ce6f16994f2c5bc34de9fb2cbabeb6/src/components/LedgerItemsFormTable.tsx)
    <img width="4748" height="1684" alt="image" src="https://github.com/user-attachments/assets/3de1e39d-5f7d-490a-82ad-9aa172664620" />
 
-3. Fetch "Code of Account" select option field from Query Service
+3. Fetch "Code of Account" select option field from Query Service: [Fetch COA function](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/CoaField.tsx)
     <img width="4076" height="3340" alt="image" src="https://github.com/user-attachments/assets/b30bbb36-a320-4f43-8d8d-2c7dca4c5596" />
-4. Integrate React Hook Form for manage form submit function
-    More Information: [Confluence Report Page](https://thee5176.atlassian.net/wiki/spaces/~7120207a78457b1be14d1eb093ee37135d9fb6/pages/68026372/React+MUI#3.-Form-handling-with-React-Hook-Form)
+
+4. Integrate React Hook Form for manage form submit function: [useForm Hook](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx)
+    - More Information: [Confluence Report Page](https://thee5176.atlassian.net/wiki/spaces/~7120207a78457b1be14d1eb093ee37135d9fb6/pages/68026372/React+MUI#3.-Form-handling-with-React-Hook-Form)
 
 5. Validation Condition and Error Message
     ```mermaid
@@ -205,8 +155,64 @@ docker compose up -d
         end
     ```
 
-6. Reusable Validation Error Component:
+6. Reusable Validation Error Component: [Example Validation](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx)
    <img width="4428" height="2040" alt="image" src="https://github.com/user-attachments/assets/c10acabc-9434-4bc7-912d-6a02e190df8a" />
+
+## Development Principle
+1. Follows Top-Down Software Development Approach:
+    - DB Design -> Module Design
+2. Git Best Practice with "[A successful Git branching model](https://nvie.com/posts/a-successful-git-branching-model/)"
+    - "main" branch
+        - use this branch in order to: deploy new feature 
+        - only merge back when: codebase has been confirmed and ready to be deploy
+    - "develop" branch
+        - branch from "main"
+        - use this branch in order to: manage development of multiple feature at once
+        - only merge back when: codebase has been confirmed and ready to be deploy
+    - "feature" branch
+        - branch from "develop"
+        - use this branch in order to: manage local development
+        - only merge back when: -NO RESTRICTION- but recommend to manage atomic change per git commit
+        - **can open multiple branch at once**
+    - "hotfix" branch
+        - branch from "main"
+        - use this branch in order to: 
+        - only merge back when: bug has been fixed
+        - **can open multiple branch at once**
+
+## System Design
+
+### Frontend: Quick Handdraw UI Design（Wireframe + Component Planning）
+- Wireframe Design  
+  ![Wireframe Design](https://github.com/user-attachments/assets/df92b02e-a7ab-4775-81e7-de7703429c97)
+
+- Component Planning  
+  ![Component Planning](https://github.com/user-attachments/assets/e2a81153-967a-4c5b-a9f1-16e8aca2060f)
+
+
+### Backend: DB and Module Design
+- Version 1:
+    - DB Design:
+        - Table that save values of Accounting Transaction as "Transaction" Table
+        - Table that save values of Accounting Entries(Transaction by each Code of Account) as "Entries" Table
+    - Module Design:
+        - Command and Query Service hosted separately from each other.
+        - Separate DB module to take advantage of both SQL (reliable write: predefined schema and ACID properties) and NoSQL(faster read: simple query and BASE properties) database.
+        - CQRS Pattern with Kafka Message Service and Eventual Consistency Service between 2 Database
+        - Repository library: 
+            - JOOQ on the Command side for thorough　customizable ORM mapping.
+      <img src="https://github.com/user-attachments/assets/7939db8d-d2a2-48ef-97fc-14958194fedc" width="8968" height="3360" alt="image">
+- Version 2:
+    - DB Design:
+        - Change "Transaction" Table to "Ledgers"
+        - Chagne "Entry" Table to "LederItems"
+    - Module Design:
+        - Combine Database and use only SQL Database (Comment from meeting: separate DB module is too redundant to user scale)
+        - Remove Message Service and Eventual Consistency Service as for the usage of one DB
+        - Repository library:
+            -  Both use the same JOOQ for development process consistency.
+      <img width="9240" height="3448" alt="image" src="https://github.com/user-attachments/assets/58f461fb-76e1-4a7c-a0bf-4e5d08f1cf9a" />
+
 
 ## New Technology Used (Trial & Error)
 - Git Flow, Git Pull Request, Git Issues and Git Submodule
@@ -243,20 +249,27 @@ docker compose up -d
     - config custom DTO [ModelMapperConfig](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/config/ModelMapperConfig.java)
     - source: [ModelMapper Document](https://modelmapper.org/getting-started/)
  
-- Arrange-Action-Assert Testing Process:
+- Arrange-Act-Assert Testing Process:
     1. Arrange - Establish testing data
-    2. Action - Run the Test subject
+    2. Act - Run the Test subject
     3. Assert - Check the desired behaviour result from test subject
   
       
 - Unit Test and Integration Test
   - **Unit test** - check real output of each internal code component with [JUnit](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/test/java/com/thee5176/ledger_command/Application/dto/LedgersEntryTest.java)
   - **Integration test** - check for integration call of other function and mock the output with [Mockito](https://github.com/Thee5176/springboot_cqrs_command/blob/develop/src/test/java/com/thee5176/ledger_command/Domain/service/LedgerCommandServiceTest.java)
-  
+
+- React and MUI component
+    - Trial and Error with MUI Component with official Documentation [usage example](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx)
+    - Customize MUI template with "sx" and "variant" props [usage example](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/ErrorAlert.tsx)
+
+- Create RestAPI Request from Frontend to Backend
+    - POST: [submit form](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx#L43)
+    - POST: [retreive availabe COA options](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/CoaField.tsx#L17)
 - Docker
     -[Merge Compose file](https://github.com/Thee5176/SpringBoot_CQRS/blob/main/compose.yaml)
 
-## New Topic Learned (During Team Meeting & Feedback)
+## New Knowledge Gained (During Team Meeting & Feedback)
 - Microservice vs Monolith Architecture
     - **Comparison Table:**
         | Feature             | Monolith                                       | Microservice                                     |
@@ -287,7 +300,6 @@ docker compose up -d
             D -- No --> E[Use UUID v4]
             D -- Yes --> F[Use UUID v7 or ULID]
         ```
-
 - Ubitiquous Language and Entity Name Refactoring
     - beware of name that is close to Reserved word, Software development vocab
     - Tips: Master and Transaction Entity, Use Specific language
