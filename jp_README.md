@@ -1,18 +1,179 @@
 # SpringBoot_CQRS
 
-// Table of Contents
+## 目次
+1. [インストールと実行手順](#インストールと実行手順)
+2. [主な機能](#主な機能)
+3. [開発原則](#開発原則)
+4. [システム設計](#インストールと実行手順)
+5. [新技術の導入（試行錯誤）](#新技術の導入（試行錯誤）)
+6. [新しく学んだトピック（会議・フィードバック）](#新しく学んだトピック（会議・フィードバック）)
 
-## ロードマップ
-1. 要件と機能分析
-2. スコープ管理
-3. 設計と図解
-4. 開発プラクティスと計画
-5. 開発（新技術による試行錯誤）
-6. ドキュメント作成（開発中に学んだ新しいトピックとフィードバック）
+## インストールと実行手順
+```bash
+# 1. ディレクトリ準備 \& GitHubからクローン
+git clone --recurse-submodules -j3 https://github.com/Thee5176/SpringBoot_CQRS
+cd SpringBoot_CQRS
 
-## 開発原則
-- トップダウン型ソフトウェア開発アプローチ：UI設計 → DB設計 → モジュール設計
-- Gitベストプラクティス「[成功するGitブランチモデル](https://nvie.com/posts/a-successful-git-branching-model/)」
+# 2. マイグレーションとビルド処理
+
+## 2.1 コマンドユニット：Postgresコンテナ起動とDBセットアップ
+docker compose up postgres -d --build
+cd springboot_cqrs_command
+chmod +x mvnw
+./mvnw flyway:migrate
+./mvnw clean package -DskipTests
+cd ..
+
+## 2.2 クエリユニット
+cd springboot_cqrs_query
+chmod +x mvnw
+./mvnw clean package -DskipTests
+cd ..
+
+# 3. 全サービス起動
+docker compose build --no-cache
+docker compose up -d
+```
+
+## 主な機能
+
+### SpringBoot コマンドサービス
+
+| 機能 | 内容説明 | 参照リンク |
+| :-- | :-- | :-- |
+| カスタムオブジェクトマッパー | DTOと複数ドメインエンティティ間のフィールドマッピングをModelMapperでカスタマイズ | [ModelMapperConfig.java](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/config/ModelMapperConfig.java) |
+| 二重入力バリデーション | - BalanceCheck：balanceTypeごとのamountの合計がBigDecimal.ZEROと一致するかをカスタムバリデータで検証<br>- アカウントコード（COA）重複チェック：DTOメソッドとHibernate UniqueElementsによるチェック | - [BalanceCheckValidator.java](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/validation/BalanceCheckValidator.java) <br> - [LedgersEntryDTO.javaのユニーク化](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Application/dto/LedgersEntryDTO.java#L37) |
+| トランザクション管理 | - 作成トランザクション：集約エンティティを含む作成処理<br>- 置換更新トランザクション：Java Streamを用いたアップサート処理 | - [作成トランザクション](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Domain/service/LedgerCommandService.java#L33) <br> - [更新トランザクション](https://github.com/Thee5176/SpringBoot_CQRS_Command/blob/develop/src/main/java/com/thee5176/ledger_command/Domain/service/LedgerCommandService.java#L56) |
+
+### トランザクション管理のシーケンス図
+
+**作成トランザクション**
+```mermaid
+sequenceDiagram
+        actor User
+        participant Controller as LedgerController
+        participant Service as LedgerCommandService
+        participant Repo as LedgerRepository
+        participant ItemRepo as LedgerItemsRepository
+        participant Mapper as LedgerMapper
+        participant ItemsMapper as LedgerItemsMapper
+
+User->>Controller: POST /ledger (CreateLedgerDTO)
+        Controller->>Service: createLedger(CreateLedgerDTO)
+        Service->>Mapper: map(CreateLedgerDTO) → Ledgers
+        Service->>Repo: createLedger(Ledgers)
+        Service->>ItemsMapper: map(CreateLedgerDTO) → List<LedgerItems>
+        loop for each LedgerItems
+            Service->>ItemRepo: createLedgerItems(LedgerItems)
+        end
+        Service-->>Controller: (void)
+        Controller-->>User: 200 OK / error
+```
+**置換更新トランザクション**
+```mermaid
+sequenceDiagram
+        actor User
+        participant Controller as LedgerController
+        participant Service as LedgerCommandService
+        participant Mapper as LedgerItemsMapper
+        participant Repo as LedgerItemRepository
+
+User->>Controller: POST /ledger (CreateLedgerDTO)
+        Controller->>Service: updateLedger(LedgerEntryDTO)
+        Service->>Repo: getLedgerItemsByLedgerId(ledgerEntryDTO.id)
+        Service->>Mapper: map(ledgerEntryDTO)
+        Service->>Service: Map existing items by COA
+        Service->>Service: For each update item:
+        alt COA exists
+            Service->>Repo: updateLedgerItems(item)
+        else COA does not exist
+            Service->>Repo: createLedgerItems(item)
+        end
+        Service->>Service: For each existing item not in update list
+        Service->>Repo: deleteLedgerItems(item.id)
+```
+### SpringBoot クエリサービス
+
+| 機能 | 内容説明 | 参照リンク |
+| :-- | :-- | :-- |
+| JOOQによる結合クエリ | リポジトリ層でJOINクエリを用いてN+1問題を解消 | [LedgersRepository.java](https://github.com/Thee5176/springboot_cqrs_query/blob/develop/src/main/java/com/thee5176/ledger_query/Infrastructure/repository/LedgersRepository.java#L57) |
+| 平坦化データ抽出 | サービス層でIDからエンティティへのMapを作成し、再帰的なクエリを排除（N+1問題への対策） | [LedgersQueryService.java](https://github.com/Thee5176/SpringBoot_CQRS_Query/blob/develop/src/main/java/com/thee5176/ledger_query/Domain/service/LedgersQueryService.java#L24) |
+
+#### JOOQ結合クエリのシーケンス図
+```mermaid
+sequenceDiagram
+        participant Service
+        participant JOOQContext
+        participant LedgersTable
+        participant LedgerItemsTable
+
+Service->>JOOQContext: fetchDtoContext()
+        JOOQContext->>LedgersTable: from(Tables.LEDGERS)
+        JOOQContext->>LedgerItemsTable: leftJoin(Tables.LEDGER_ITEMS)
+        JOOQContext->>LedgerItemsTable: on(LEDGERS.ID = LEDGER_ITEMS.LEDGER_ID)
+        JOOQContext->>LedgersTable: where(LEDGERS.ID = id)
+        JOOQContext->>Service: fetchInto(LedgersQueryOutput.class)
+        Service-->>Service: return List<LedgersQueryOutput>
+```
+#### 平坦化データ抽出トランザクションのシーケンス図
+```mermaid
+sequenceDiagram
+        participant Controller
+        participant LedgersRepository
+        participant ModelMapper
+        participant Logger
+
+Controller->>LedgersRepository: getAllLedgersDTO()
+        LedgersRepository-->>Controller: List<LedgersQueryOutput>
+        Controller->>Logger: log.info(queryOutputs)
+        Controller->>ModelMapper: map each LedgersQueryOutput to GetLedgerResponse
+        ModelMapper-->>Controller: List<GetLedgerResponse>
+        Controller->>ModelMapper: map and group by ledgerId to LedgerItemsAggregate
+        ModelMapper-->>Controller: Map<ledgerId, List<LedgerItemsAggregate>>
+        Controller->>Controller: setLedgerItems() for each GetLedgerResponse
+        Controller-->>Controller: return List<GetLedgerResponse>
+```
+## フロントエンド React フォーム
+
+| 機能 | 内容説明 | 参照リンク |
+| :-- | :-- | :-- |
+| 動的コンポーネント分割 | Atomic Designパターンに従い、複雑なコンポーネントをよりシンプルでメンテナンスしやすい部品に分割 |  |
+| LedgerItemsの動的追加 | LedgerItemsの入力フィールドを動的に追加 | - [LedgerItemInputField.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/index.tsx)<br>- [LedgerItemsFormTable.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/99129f8f92ce6f16994f2c5bc34de9fb2cbabeb6/src/components/LedgerItemsFormTable.tsx)<br> |
+| COA選択フィールドの動的取得 | クエリサービスから「Code of Account」の選択肢を動的に取得 | [CoaField.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/CoaField.tsx)<br> |
+| React Hook Form連携 | React Hook FormのuseFormフックでフォームの送信処理を管理 | [LedgerEntryForm.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx)<br>- [Confluence リポート](https://thee5176.atlassian.net/wiki/spaces/~7120207a78457b1be14d1eb093ee37135d9fb6/pages/68026372/React+MUI#3.-Form-handling-with-React-Hook-Form) |
+| バリデーションとエラーメッセージ | 入力値の検証と送信前のエラー表示 |  |
+| 再利用可能なバリデーション部品 | エラーメッセージのコンポーネントを集中管理 | [Error Message Component](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/ErrorAlert.tsx)<br> |
+
+### バリデーション条件・エラーメッセージのシーケンス図
+```mermaid
+sequenceDiagram
+        actor User
+        participant LedgerEntryForm
+        participant ErrorAlert
+
+User->>LedgerEntryForm: フォーム入力・送信
+        LedgerEntryForm->>LedgerEntryForm: 項目バリデーション（react-hook-form）
+        alt バリデーション失敗
+            LedgerEntryForm->>ErrorAlert: エラーメッセージ表示
+        else バリデーション成功
+            LedgerEntryForm->>LedgerEntryForm: バックエンドへ送信
+            LedgerEntryForm->>LedgerEntryForm: フォームリセット
+        end
+```
+# 開発原則
+
+| ブランチ種別 | 派生元 | 用途 | マージタイミング | 備考 |
+| :-- | :-- | :-- | :-- | :-- |
+| main | — | 新機能のデプロイ用 | コードベースが安定・確認済み時のみマージ | デプロイ用ブランチ |
+| develop | main | 複数機能の開発管理 | コードベースが安定・確認済み時のみマージ | 統合用ブランチ |
+| feature | develop | ローカル開発・小まめなコミット | 制限なし、複数同時進行可能 | 複数機能ブランチ並行可能 |
+| hotfix | main | バグ修正 | 修正完了後すぐマージ | 複数ホットフィックス可能 |
+
+### 追加説明
+
+- トップダウン開発アプローチを推奨（DB設計 → モジュール設計 → 実装）
+- "[A successful Git branching model](https://nvie.com/posts/a-successful-git-branching-model/)"に基づいたGit運用
+- 安定性を重視した明確なマージ戦略で並行開発を管理
 
 ---
 ## 実行手順
