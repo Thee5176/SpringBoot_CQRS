@@ -25,14 +25,32 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Set up DB
+      - name: Check if all secrets are set
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_USERNAME: ${{ vars.DB_USERNAME }}
         run: |
-          docker compose up postgres -d --build
-          until docker exec postgres-cqrs-db pg_isready; do
-            sleep 2
-            done
-          echo "PostgreSQL is ready!"
-      
+          missing=""
+          if [ -z "$DB_URL" ]; then
+            echo "DB_URL is not set"
+            missing="yes"
+          fi
+          if [ -z "$DB_PASSWORD" ]; then
+            echo "DB_PASSWORD is not set"
+            missing="yes"
+          fi
+          if [ -z "$DB_USERNAME" ]; then
+            echo "DB_USERNAME is not set"
+            missing="yes"
+          fi
+          if [ -n "$missing" ]; then
+            echo "One or more secrets are missing"
+            exit 1
+          else
+            echo "All DB secrets are set"
+          fi
+
       - name: build Command Unit
         run: |
           chmod +x mvnw
