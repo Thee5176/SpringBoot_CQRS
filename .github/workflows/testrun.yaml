@@ -10,8 +10,13 @@ on:
 
 jobs:
   test-deployment:
+    environment: AWS and Supabase
     name: Build and Test CQRS Application
     runs-on: ubuntu-latest
+    env:
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
     steps:
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
@@ -26,10 +31,6 @@ jobs:
           cache: 'maven'
 
       - name: Check if all secrets are set
-        env:
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_USERNAME: ${{ vars.DB_USERNAME }}
         run: |
           missing=""
           if [ -z "$DB_URL" ]; then
