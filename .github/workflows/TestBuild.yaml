@@ -115,4 +115,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push Docker image
-        run: docker compose -f compose.yaml push
+        run: |
+          ls -a
+          tree -a -L 2
+          docker compose -f compose.yaml push
