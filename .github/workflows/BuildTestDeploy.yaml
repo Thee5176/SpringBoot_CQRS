@@ -48,8 +48,8 @@ jobs:
 
       - name: Start All Services
         run: |
-          docker compose build --no-cache
-          docker compose up -d
+          docker compose -f docker/compose.yaml -f docker/docker-compose.override.yaml build --no-cache
+          docker compose -f docker/compose.yaml -f docker/docker-compose.override.yaml up -d
 
       - name: Verify services are running
         run: docker ps
@@ -61,7 +61,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push Docker image
         run: |
-          docker compose -f compose.yaml push
+          docker compose -f compose.yaml -f docker/docker-compose.prod.yaml push
 
   # setup-terraform:
   #   environment: "AWS and Supabase"
@@ -106,7 +106,8 @@ jobs:
   #           cd SpringBoot_CQRS
 
   #           echo "--- Pulling latest Docker images: ---"
-  #           docker compose -f compose.yaml up -d --no-build
+  #           docker compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml pull
+  #           docker compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml up -d --no-build
             
   #           echo "--- Verifying running containers: ---"
   #           docker ps

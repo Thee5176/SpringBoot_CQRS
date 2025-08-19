@@ -2,16 +2,6 @@ provider "aws" {
   region = "ap-northeast-1" #japan
 }
 
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-}
-
 resource "aws_security_group" "web_server_sg" {
   name        = "web-server-sg"
   description = "Allow SSH and HTTP inbound traffic"
@@ -49,9 +39,10 @@ data "aws_key_pair" "deployment_key" {
 }
 
 resource "aws_instance" "web_server" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  key_name      = data.aws_key_pair.deployment_key.key_name
+  ami                    = "ami-07faa35bbd2230d90" #Amazon linux AMI
+  instance_type          = "t2.micro"
+  key_name               = data.aws_key_pair.deployment_key.key_name
+  vpc_security_group_ids = [aws_security_group.web_server_sg.id]
 
   tags = {
     Name = "web-server"

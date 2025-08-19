@@ -1,8 +1,6 @@
 services:
   command_service:
-    build: springboot_cqrs_command/.
     container_name: springboot_cqrs_command
-    image: thee5176/springboot_cqrs_command:latest
     ports:
     - 8181:8080
     networks:
@@ -10,9 +8,7 @@ services:
       - backend
 
   query_service:
-    build: springboot_cqrs_query/.
     container_name: springboot_cqrs_query
-    image: thee5176/springboot_cqrs_query:latest
     ports:
       - 8182:8081
     networks:
@@ -20,9 +16,7 @@ services:
       - backend
 
   frontend_service:
-    build: react_mui_cqrs/.
     container_name: react_mui_cqrs
-    image: thee5176/react_cqrs_ui:latest
     ports:
     - 8183:5173
     networks:
