@@ -68,8 +68,6 @@ jobs:
     name: Set up AWS EC2 Instance with Terraform
     # needs: build-and-test
     runs-on: ubuntu-latest
-    env:
-      AWS_SSH_PUBLIC_KEY: ${{ secrets.AWS_SSH_PUBLIC_KEY }}
     outputs:
       ec2_public_ip: ${{ steps.capture-ec2-ip.outputs.ec2_public_ip }}
     steps:
