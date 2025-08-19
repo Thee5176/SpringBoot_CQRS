@@ -1,0 +1,117 @@
+name: Build and Test CQRS Application
+
+on:
+  push:
+    branches:
+    - main
+    - develop
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    environment: AWS and Supabase
+    name: Build and Test CQRS Application
+    runs-on: ubuntu-latest
+    env:
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    steps:
+      - name: Check if all secrets are set
+        run: |
+          missing=""
+          if [ -z "$DB_URL" ]; then
+            echo "DB_URL is not set"
+            missing="yes"
+          fi
+          if [ -z "$DB_PASSWORD" ]; then
+            echo "DB_PASSWORD is not set"
+            missing="yes"
+          fi
+          if [ -z "$DB_USERNAME" ]; then
+            echo "DB_USERNAME is not set"
+            missing="yes"
+          fi
+          if [ -z "$DOCKERHUB_USER" ]; then
+            echo "DOCKERHUB_USER is not set"
+            missing="yes"
+          fi
+          if [ -z "$DOCKERHUB_TOKEN" ]; then
+            echo "DOCKERHUB_TOKEN is not set"
+            missing="yes"
+          fi
+          if [ -n "$missing" ]; then
+            echo "One or more secrets are missing"
+            exit 1
+          else
+            echo "All required secrets are set"
+          fi
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: build Command Unit
+        run: |
+          chmod +x mvnw
+          ./mvnw flyway:migrate
+          ./mvnw clean package -DskipTests
+        working-directory: springboot_cqrs_command
+
+      - name: Build Query Unit 
+        run: |
+            chmod +x mvnw
+            ./mvnw clean package -DskipTests
+        working-directory: springboot_cqrs_query
+
+      - name: Start All Services
+        run: |
+          docker compose build --no-cache
+          docker compose up -d
+
+      - name: Verify services are running
+        run: docker ps
+
+  push-image:
+    environment: AWS and Supabase
+    name: Push Succesful Image to Dockerhub
+    runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    steps:
+      - name: Check if all secrets are set
+        run: |
+          missing=""
+          if [ -z "$DOCKERHUB_USER" ]; then
+            echo "DOCKERHUB_USER is not set"
+            missing="yes"
+          fi
+          if [ -z "$DOCKERHUB_TOKEN" ]; then
+            echo "DOCKERHUB_TOKEN is not set"
+            missing="yes"
+          fi
+          if [ -n "$missing" ]; then
+            echo "One or more secrets are missing"
+            exit 1
+          else
+            echo "All required secrets are set"
+          fi
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image
+        run: docker compose -f compose.yaml push
