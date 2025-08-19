@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-and-test:
-    environment: AWS and Supabase
+    environment: "AWS and Supabase"
     name: Build and Test CQRS Application
     runs-on: ubuntu-latest
     env:
@@ -84,8 +84,9 @@ jobs:
         run: docker ps
 
   push-image:
-    environment: AWS and Supabase
+    environment: "AWS and Supabase"
     name: Push Succesful Image to Dockerhub
+    needs: build-and-test
     runs-on: ubuntu-latest
     env:
       DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
@@ -111,7 +112,7 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push Docker image
         run: docker compose -f compose.yaml push
