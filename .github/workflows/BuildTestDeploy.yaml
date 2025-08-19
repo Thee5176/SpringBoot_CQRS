@@ -102,12 +102,18 @@ jobs:
         working-directory: envs/dev
       - name: SSH into EC2 instance
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ec2_key ec2-user@"$(terraform output -raw instance_public_ip | head -n 1)" << 'EOF'
-            echo "--- Pulling latest Docker images: ---"
-            docker compose -f compose.yaml up -d --no-build
+          terraform output -raw instance_public_ip | head -n 1
+          # ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ec2_key ec2-user@"$()" << 'EOF'
+          #   echo "--- Clone Repository: ---"
+          #   git clone --recurse-submodules -j3 https://github.com/Thee5176/SpringBoot_CQRS
+          #   cd SpringBoot_CQRS
+
+          #   echo "--- Pulling latest Docker images: ---"
+          #   docker compose -f compose.yaml up -d --no-build
             
-            echo "--- Verifying running containers: ---"
-            docker ps
+          #   echo "--- Verifying running containers: ---"
+          #   docker ps
             
-            echo "--- Deployment complete. ---"
-          EOF
+          #   echo "--- Deployment complete. ---"
+          # EOF
+        working-directory: envs/dev
