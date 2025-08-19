@@ -13,15 +13,14 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-resource "aws_key_pair" "ec2_key_pair" {
+data "aws_key_pair" "ec2_key_pair" {
   key_name   = "ssh_deploy_key"
-  public_key = file("~/.ssh/my_ec2_key.pub")
 }
 
 resource "aws_instance" "web_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
-  key_name      = resource.aws_key_pair.ec2_key_pair.key_name
+  key_name      = data.aws_key_pair.ec2_key_pair.key_name
 
   tags = {
     Name = "web-server"
