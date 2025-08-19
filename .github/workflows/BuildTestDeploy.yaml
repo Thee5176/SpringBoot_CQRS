@@ -71,15 +71,8 @@ jobs:
     outputs:
       ec2_public_ip: ${{ steps.capture-outputs.outputs.ec2_public_ip }}
     steps:
-      - name: Checkout repository with submodules
+      - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up SSH key
-        run: |
-            mkdir -p ~/.ssh
-            echo "${{ secrets.EC2_SSH_PUBLIC_KEY }}" > ~/.ssh/my_ec2_key.pub
-            chmod 600 ~/.ssh/my_ec2_key.pub
-            echo "SSH key set up successfully"
 
       - name: Setup AWS Credential     #TODO: Setup IAM User with Permission and generate credentials with Terraform
         uses: aws-actions/configure-aws-credentials@v2
@@ -103,8 +96,9 @@ jobs:
       - id: capture-outputs
         name: Capture EC2 public IP output
         run: |
-          ec2_public_ip="$(terraform output -raw instance_public_ip | head -n 1)"
-          echo "ec2_public_ip=${ec2_public_ip}" >> "$GITHUB_OUTPUT"
+          terraform output -raw instance_public_ip
+          ec2_public_ip=$(terraform output -raw instance_public_ip | head -n 1)
+          echo "ec2_public_ip=$ec2_public_ip" >> "$GITHUB_OUTPUT"
         working-directory: envs/dev
   deploy-code:
     environment: "AWS and Supabase"
