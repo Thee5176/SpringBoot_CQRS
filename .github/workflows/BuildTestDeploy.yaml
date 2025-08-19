@@ -69,7 +69,7 @@ jobs:
     # needs: build-and-test
     runs-on: ubuntu-latest
     outputs:
-      ec2_public_ip: ${{ steps.capture-ec2-ip.outputs.ec2_public_ip }}
+      ec2_public_ip: ${{ steps.capture-outputs.outputs.ec2_public_ip }}
     steps:
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
