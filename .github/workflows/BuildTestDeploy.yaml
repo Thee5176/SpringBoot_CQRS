@@ -93,7 +93,7 @@ jobs:
         working-directory: envs/dev
       - name: Set up SSH key
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         run: |
             mkdir -p ~/.ssh
             echo $SSH_PRIVATE_KEY > ~/.ssh/my_ec2_key
@@ -103,13 +103,15 @@ jobs:
       - name: SSH into EC2 instance
         run: |
           # Get public IP address
-          EC2_PUBLIC_IP=$(terraform output -raw instance_public_ip | head -n 1)
-          echo "EC2 Public IP: $EC2_PUBLIC_IP"
+          EC2_PUBLIC_IP="$(terraform output -raw instance_public_ip | head -n 1)"
+          echo "--- Deploying to EC2 instance at IP: ${EC2_PUBLIC_IP} ---"
 
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ec2_key ec2-user@"$EC2_PUBLIC_IP" << 'EOF'
-        working-directory: envs/dev
-      - name: Deploy image with dockerhub
-        run: |
-          docker compose -f compose.yaml up -d --no-build
-          docker ps
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ec2_key ec2-user@"${EC2_PUBLIC_IP}" << 'EOF'
+            echo "--- Pulling latest Docker images: ---"
+            docker compose -f compose.yaml up -d --no-build
+            
+            echo "--- Verifying running containers: ---"
+            docker ps
+            
+            echo "--- Deployment complete. ---"
           EOF
