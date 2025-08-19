@@ -17,8 +17,8 @@ jobs:
     env:
       DB_URL: ${{ secrets.DB_URL }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
+      DB_USERNAME: ${{ vars.DB_USER }}
+      DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
       - name: Checkout repository with submodules
