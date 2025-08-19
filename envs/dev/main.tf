@@ -12,7 +12,7 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-resource "tls_generate_key" "ec2_ssh_key" {
+resource "tls_private_key" "ec2_ssh_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
