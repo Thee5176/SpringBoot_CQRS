@@ -83,32 +83,6 @@ jobs:
       - name: Verify services are running
         run: docker ps
 
-  push-image:
-    environment: "AWS and Supabase"
-    name: Push Succesful Image to Dockerhub
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    env:
-      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-    steps:
-      - name: Check if all secrets are set
-        run: |
-          missing=""
-          if [ -z "$DOCKERHUB_USER" ]; then
-            echo "DOCKERHUB_USER is not set"
-            missing="yes"
-          fi
-          if [ -z "$DOCKERHUB_TOKEN" ]; then
-            echo "DOCKERHUB_TOKEN is not set"
-            missing="yes"
-          fi
-          if [ -n "$missing" ]; then
-            echo "One or more secrets are missing"
-            exit 1
-          else
-            echo "All required secrets are set"
-          fi
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
