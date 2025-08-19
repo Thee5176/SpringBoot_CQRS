@@ -21,7 +21,7 @@ resource "aws_key_pair" "ec2_key_pair" {
 resource "aws_instance" "web_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
-  key_name = resource.aws_key_pair.ec2_key_pair.key_name
+  key_name      = resource.aws_key_pair.ec2_key_pair.key_name
 
   tags = {
     Name = "web-server"

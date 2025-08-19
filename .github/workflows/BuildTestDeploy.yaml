@@ -61,8 +61,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push Docker image
         run: |
-          ls -a
-          tree -a -L 2
           docker compose -f compose.yaml push
 
   setup-terraform:
@@ -78,12 +76,9 @@ jobs:
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.AWS_SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
-          chmod 600 ~/.ssh/id_rsa.pub
+          echo "${{ secrets.AWS_SSH_PUBLIC_KEY }}" > ~/.ssh/my_ec2_key.pub
+          chmod 600 ~/.ssh/my_ec2_key.pub
           echo "SSH key set up successfully"
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -106,11 +101,12 @@ jobs:
         run: echo "ec2_public_ip=$(terraform output -raw ec2_public_ip)" >> $GITHUB_OUTPUT
         working-directory: envs/dev
 
-
   deploy-code:
     environment: "AWS and Supabase"
     name: Deploy Code to EC2 Instance
-    needs: setup-terraform
+    needs: 
+      - build-and-test
+      - setup-terraform
     runs-on: ubuntu-latest
     env:
       AWS_SSH_PRIVATE_KEY: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
