@@ -61,7 +61,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push Docker image
         run: |
-          docker compose -f compose.yaml -f docker/docker-compose.prod.yaml push
+          docker compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml push
 
   # setup-terraform:
   #   environment: "AWS and Supabase"
