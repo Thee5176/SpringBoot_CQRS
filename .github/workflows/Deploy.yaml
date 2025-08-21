@@ -33,7 +33,7 @@ jobs:
           DB_USERNAME: ${{ vars.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
-          ssh -i ~/.ssh/my_ec2_key ec2-user@$${PUBLIC_IP} <<EOF
+          ssh -i ~/.ssh/my_ec2_key ec2-user@"${PUBLIC_IP}" <<EOF
             echo "--- Clone Repository: ---"
             # only checkout the docker directory based on the workflow branch
             git clone https://github.com/Thee5176/SpringBoot_CQRS --no-checkout
