@@ -1,5 +1,4 @@
-name: Build and Test CQRS Application
-
+name: Build and Push Docker Image
 on:
   push:
     branches:
@@ -16,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DB_URL: ${{ secrets.DB_URL }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_USERNAME: ${{ vars.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
