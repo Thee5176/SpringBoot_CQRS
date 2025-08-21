@@ -30,9 +30,20 @@ resource "aws_route_table" "public_route" {
     Name = "web-rt"
   }
 }
-# Route Table Association : connect subnet with route table
+
+# EC2 Table Association : connect EC2 subnet with public route table
 resource "aws_route_table_association" "public_subnet_association" {
   subnet_id      = aws_subnet.server_subnet.id
+  route_table_id = aws_route_table.public_route.id
+}
+
+# RDS Table Association : connect RDS subnet with public route table
+resource "aws_route_table_association" "db_subnet1_assoc" {
+  subnet_id      = aws_subnet.db_subnet_1.id
+  route_table_id = aws_route_table.public_route.id
+}
+resource "aws_route_table_association" "db_subnet2_assoc" {
+  subnet_id      = aws_subnet.db_subnet_2.id
   route_table_id = aws_route_table.public_route.id
 }
 
@@ -135,11 +146,20 @@ resource "aws_security_group" "web_sg" {
   }
 }
 
-##------------------------EC2 Instance---------------------------
-# DB_parameter
+# Elastic IP : Set static IP address
+resource "aws_eip" "web_eip" {
+  instance = aws_instance.web_server.id
+  domain   = "vpc"
+  tags = {
+    Name = "web_eip"
+  }
+}
+
+##------------------------RDS Instance---------------------------
+
 # DB Subnet Group : 2 or more subnets in different AZ
-resource "aws_db_subnet_group" "web_db_subnets" {
-  name = "web-db-subnet-group"
+resource "aws_db_subnet_group" "my_db_subnet_group" {
+  name = "my-db-subnet-group"
   subnet_ids = [
     aws_subnet.db_subnet_1.id,
     aws_subnet.db_subnet_2.id
@@ -168,8 +188,10 @@ resource "aws_subnet" "db_subnet_2" {
     Name = "web-db"
   }
 }
-resource "aws_db_parameter_group" "web_db_parameter_group" {
-  name        = "web-db-parameter-group"
+
+# DB_parameter
+resource "aws_db_parameter_group" "my_db_parameter_group" {
+  name        = "my-db-parameter-group"
   description = "Parameter group for web database"
   family      = "postgres16"
 
@@ -183,15 +205,6 @@ resource "aws_db_parameter_group" "web_db_parameter_group" {
   }
 }
 
-# Elastic IP : Set static IP address
-resource "aws_eip" "web_eip" {
-  instance = aws_instance.web_server.id
-  domain   = "vpc"
-  tags = {
-    Name = "web_eip"
-  }
-}
-
 # RDS
 resource "aws_db_instance" "web_db" {
   identifier             = "web-db"
@@ -202,9 +215,9 @@ resource "aws_db_instance" "web_db" {
   username               = var.db_username
   password               = var.db_password
   db_name                = var.db_schema
-  vpc_security_group_ids = [aws_security_group.web_sg.id]
-  db_subnet_group_name   = aws_db_subnet_group.web_db_subnets.name
-  parameter_group_name   = aws_db_parameter_group.web_db_parameter_group.name
+  vpc_security_group_ids = [aws_security_group.db_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.my_db_subnet_group.name
+  parameter_group_name   = aws_db_parameter_group.my_db_parameter_group.name
   publicly_accessible    = true
   skip_final_snapshot    = true
 
