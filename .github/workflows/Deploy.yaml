@@ -45,18 +45,18 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ec2_key ec2-user@${{ secrets.EC2_PUBLIC_IP }} <<EOF
             echo "--- Clone Repository: ---"
             # only checkout the docker directory based on the workflow branch
-            git clone https://github.com/Thee5176/SpringBoot_CQRS
+            git clone https://github.com/Thee5176/SpringBoot_CQRS --no-checkout
+            cd SpringBoot_CQRS
             git sparse-checkout set docker --no-cone
             git checkout ${{ github.event.workflow_run.head_branch }}
 
-            cd SpringBoot_CQRS
             
             echo "--- Setup Environment Variables: ---"
             echo "DB_URL=${{ secrets.DB_URL }}"           >> .env
             echo "DB_USERNAME=${{ vars.DB_USER }}"        >> .env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
             ls -a -L 2
-
+            
             echo "--- Pulling latest Docker images: ---"
             sudo service docker start
             docker-compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml pull
