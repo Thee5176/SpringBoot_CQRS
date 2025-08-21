@@ -1,9 +1,18 @@
-output "instance_public_ip" {
-  description = "Public IP address of the EC2 instance."
+# EC2
+output "ec2_instance_id" {
+  description = "EC2 instance id"
+  value       = aws_instance.web_server.id
+}
+output "ec2_instance_public_ip" {
+  description = "EC2 public IP address"
   value       = aws_instance.web_server.public_ip
 }
 
-output "instance_id" {
-  description = "The ID of the created EC2 instance."
-  value       = aws_instance.web_server.id
+# DB
+output "rds_instance_id" {
+  description = "RDS instance id"
+  value       = aws_db_instance.web_db.id
+}
+output "rds_endpoint" {
+  value = aws_db_instance.web_db.endpoint
 }
