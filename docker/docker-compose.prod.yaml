@@ -1,9 +1,17 @@
 services:
   command_service:
     image: thee5176/springboot_cqrs_command:latest
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
 
   query_service:
     image: thee5176/springboot_cqrs_query:latest
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
 
   frontend_service:
     image: thee5176/react_cqrs_ui:latest
