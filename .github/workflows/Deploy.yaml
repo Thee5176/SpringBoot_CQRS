@@ -35,8 +35,13 @@ jobs:
         run: |
           ssh -i ~/.ssh/my_ec2_key ec2-user@$${PUBLIC_IP} <<EOF
             echo "--- Clone Repository: ---"
-            git clone https://github.com/Thee5176/SpringBoot_CQRS
+            # only checkout the docker directory based on the workflow branch
+            git clone https://github.com/Thee5176/SpringBoot_CQRS --no-checkout
+            git sparse-checkout set docker --no-cone
+            git checkout ${{ github.event.workflow_run.head_branch }}
+
             cd SpringBoot_CQRS
+            ls -a -L 2
 
             echo "--- Setup Environment Variables: ---"
             echo "DB_URL=${DB_URL}"           >> .env
