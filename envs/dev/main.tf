@@ -97,6 +97,11 @@ resource "aws_instance" "web_server" {
     sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
     docker-compose --version
+
+    # Clone the repository and checkout the docker directory
+      git clone https://github.com/Thee5176/SpringBoot_CQRS --no-checkout
+      cd SpringBoot_CQRS
+      git sparse-checkout set docker --no-cone
   EOF
 
   tags = {
