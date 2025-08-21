@@ -10,7 +10,8 @@ resource "aws_vpc" "main_vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "web-server"
+    Name = "web-network", 
+    Name = "project:accounting-cqrs-project"
   }
 }
 
@@ -19,7 +20,8 @@ resource "aws_internet_gateway" "main_igw" {
   vpc_id     = aws_vpc.main_vpc.id
   depends_on = [aws_vpc.main_vpc]
   tags = {
-    Name = "web-igw"
+    Name = "web-network", 
+    Name = "project:accounting-cqrs-project"
   }
 }
 
@@ -27,7 +29,8 @@ resource "aws_internet_gateway" "main_igw" {
 resource "aws_route_table" "public_route" {
   vpc_id = aws_vpc.main_vpc.id
   tags = {
-    Name = "web-rt"
+    Name = "web-network", 
+    Name = "project:accounting-cqrs-project"
   }
 }
 
@@ -54,15 +57,6 @@ resource "aws_route" "public_route" {
   route_table_id         = aws_route_table.public_route.id
 }
 
-##-----------------------Credential--------------------------------
-# SSH Key
-data "aws_key_pair" "deployment_key" { # Manually created on aws console
-  key_name = "github_workflow_key"
-  tags = {
-    Name = "web-server"
-  }
-}
-
 ##------------------------EC2 Instance---------------------------
 # EC2 Subnet : define IP address range based on VPC
 resource "aws_subnet" "server_subnet" {
@@ -71,7 +65,8 @@ resource "aws_subnet" "server_subnet" {
   availability_zone = "ap-northeast-1a"
 
   tags = {
-    Name = "web-server"
+    Name = "web-server", 
+    Name = "project:accounting-cqrs-project"
   }
 }
 
@@ -101,7 +96,8 @@ resource "aws_instance" "web_server" {
   EOF
 
   tags = {
-    Name = "web_server"
+    Name = "web-server", 
+    Name = "project:accounting-cqrs-project"
   }
 }
 
@@ -142,17 +138,27 @@ resource "aws_security_group" "web_sg" {
   }
 
   tags = {
-    Name = "web-server"
+    Name = "web-server", 
+    Name = "project:accounting-cqrs-project"
   }
 }
 
-# Elastic IP : Set static IP address
+# EC2 SSH Key
+data "aws_key_pair" "deployment_key" { # Manually created on aws console
+  key_name = "github_workflow_key"
+  tags = {
+    Name = "web-server", 
+    Name = "project:accounting-cqrs-project"
+  }
+}
+
+# EC2 Elastic IP : Set static IP address
 resource "aws_eip" "web_eip" {
   instance = aws_instance.web_server.id
   domain   = "vpc"
   tags = {
-    Name = "web_eip"
-  }
+    Name = "web-server", 
+    Name = "project:accounting-cqrs-project"  }
 }
 
 ##------------------------RDS Instance---------------------------
@@ -166,7 +172,8 @@ resource "aws_db_subnet_group" "my_db_subnet_group" {
   ]
 
   tags = {
-    Name = "web-db-subnet-group"
+    Name = "web-db", 
+    Name = "project:accounting-cqrs-project"
   }
 }
 
@@ -176,7 +183,8 @@ resource "aws_subnet" "db_subnet_1" {
   availability_zone = "ap-northeast-1a"
 
   tags = {
-    Name = "web-db"
+    Name = "web-db", 
+    Name = "project:accounting-cqrs-project"
   }
 }
 resource "aws_subnet" "db_subnet_2" {
@@ -185,7 +193,8 @@ resource "aws_subnet" "db_subnet_2" {
   availability_zone = "ap-northeast-1d"
 
   tags = {
-    Name = "web-db"
+    Name = "web-db", 
+    Name = "project:accounting-cqrs-project"
   }
 }
 
@@ -193,7 +202,7 @@ resource "aws_subnet" "db_subnet_2" {
 resource "aws_db_parameter_group" "my_db_parameter_group" {
   name        = "my-db-parameter-group"
   description = "Parameter group for web database"
-  family      = "postgres16"
+  family      = "postgres17"
 
   parameter {
     name  = "log_connections"
@@ -201,7 +210,8 @@ resource "aws_db_parameter_group" "my_db_parameter_group" {
   }
 
   tags = {
-    Name = "web_db"
+    Name = "web-db-group", 
+    Name = "project:accounting-cqrs-project"
   }
 }
 
@@ -210,7 +220,7 @@ resource "aws_db_instance" "web_db" {
   identifier             = "web-db"
   instance_class         = "db.t3.micro"
   engine                 = "postgres"
-  engine_version         = "16.6"
+  engine_version         = "17.4"
   allocated_storage      = 5
   username               = var.db_username
   password               = var.db_password
@@ -222,8 +232,8 @@ resource "aws_db_instance" "web_db" {
   skip_final_snapshot    = true
 
   tags = {
-    Name = "web_db"
-  }
+    Name = "web-db", 
+    Name = "project:accounting-cqrs-project"  }
 }
 
 # DB Security Group
@@ -247,6 +257,7 @@ resource "aws_security_group" "db_sg" {
   }
 
   tags = {
-    Name = "web-server"
+    Name = "web-db", 
+    Name = "project:accounting-cqrs-project"
   }
 }
