@@ -44,8 +44,9 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ec2_key ec2-user@${{ secrets.EC2_PUBLIC_IP }} <<EOF
             echo "--- Checkout Latest Commit on branch ${{ github.event.workflow_run.head_branch }}: ---"
+            cd SpringBoot_CQRS
+            git sparse-checkout set docker --no-cone
             git checkout ${{ github.event.workflow_run.head_branch }}
-
             
             echo "--- Setup Environment Variables: ---"
             echo "DB_URL=${{ secrets.DB_URL }}"           >> .env
