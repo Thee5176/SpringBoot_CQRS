@@ -110,7 +110,7 @@ resource "aws_security_group" "web_sg" {
   name        = "web-server-sg"
   description = "Allow SSH and HTTP inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
-  ingress { #TODO: Write CD workflow in CodeDeploy and delete this
+  ingress {
     description = "SSH from github"
     from_port   = 22
     to_port     = 22

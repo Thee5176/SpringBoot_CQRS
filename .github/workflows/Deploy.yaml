@@ -45,19 +45,20 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ec2_key ec2-user@${{ secrets.EC2_PUBLIC_IP }} <<EOF
             echo "--- Clone Repository: ---"
             # only checkout the docker directory based on the workflow branch
-            git clone https://github.com/Thee5176/SpringBoot_CQRS --no-checkout
+            git clone https://github.com/Thee5176/SpringBoot_CQRS
             git sparse-checkout set docker --no-cone
             git checkout ${{ github.event.workflow_run.head_branch }}
 
             cd SpringBoot_CQRS
-            ls -a -L 2
-
+            
             echo "--- Setup Environment Variables: ---"
             echo "DB_URL=${{ secrets.DB_URL }}"           >> .env
             echo "DB_USERNAME=${{ vars.DB_USER }}"        >> .env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+            ls -a -L 2
 
             echo "--- Pulling latest Docker images: ---"
+            sudo service docker start
             docker-compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml pull
             docker-compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml up -d --no-build
 
@@ -68,16 +69,7 @@ jobs:
           EOF
         working-directory: envs/dev
       
-      - name: Set up SSH private key and known_hosts
+      - name: Cleanup SSH private key
+        if: always()
         run: |
-          set -euo pipefail
-          mkdir -p ~/.ssh
-          # write key safely (preserves newlines)
-          printf '%s\n' "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/my_ec2_key
-          chmod 600 ~/.ssh/my_ec2_key
-
-          # add host key to known_hosts to avoid interactive prompt
-          if [ -n "${{ secrets.EC2_PUBLIC_IP }}" ]; then
-            ssh-keyscan -H "${{ secrets.EC2_PUBLIC_IP }}" >> ~/.ssh/known_hosts || true
-            chmod 600 ~/.ssh/known_hosts
-          fi
+          shred -u ~/.ssh/my_ec2_key || rm -f ~/.ssh/my_ec2_key
