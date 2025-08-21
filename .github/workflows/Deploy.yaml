@@ -27,13 +27,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
       - name: Apply Terraform and Deliver Code to EC2
-        env:
-          PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ vars.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
-          ssh -i ~/.ssh/my_ec2_key ec2-user@${PUBLIC_IP} <<EOF
+          ssh -i ~/.ssh/my_ec2_key ec2-user@$${{ secrets.EC2_PUBLIC_IP }} <<EOF
             echo "--- Clone Repository: ---"
             # only checkout the docker directory based on the workflow branch
             git clone https://github.com/Thee5176/SpringBoot_CQRS --no-checkout
@@ -44,9 +39,9 @@ jobs:
             ls -a -L 2
 
             echo "--- Setup Environment Variables: ---"
-            echo "DB_URL=${DB_URL}"           >> .env
-            echo "DB_USERNAME=${DB_USERNAME}" >> .env
-            echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
+            echo "DB_URL=${{ secrets.DB_URL }}"           >> .env
+            echo "DB_USERNAME=${{ vars.DB_USER }}"        >> .env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
 
             echo "--- Pulling latest Docker images: ---"
             docker compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml pull
