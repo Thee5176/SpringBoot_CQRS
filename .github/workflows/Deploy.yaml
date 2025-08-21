@@ -58,11 +58,11 @@ jobs:
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
 
             echo "--- Pulling latest Docker images: ---"
-            docker compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml pull
-            docker compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml up -d --no-build
+            docker-compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml pull
+            docker-compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml up -d --no-build
 
             echo "--- Verifying running containers: ---"
-            docker ps
+            docker-compose ls
 
             echo "--- Deployment complete. ---"
           EOF

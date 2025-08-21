@@ -82,17 +82,21 @@ resource "aws_instance" "web_server" {
   user_data = <<EOF
     #!/bin/bash
     
-    # Install Docker and Docker Compose
+    # Update the system
     sudo yum update -y
+
+    # Install Git
+    sudo yum install git
+
+    # Install Docker and Docker Compose
     sudo yum install -y docker
     sudo service docker start
     sudo usermod -a -G docker ec2-user
-
-    docker info
+    docker --version
 
     sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
-    docker-compose version
+    docker-compose --version
   EOF
 
   tags = {
