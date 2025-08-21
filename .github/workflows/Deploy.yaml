@@ -25,13 +25,13 @@ jobs:
           set -euo pipefail
           mkdir -p ~/.ssh
           # write key safely (preserves newlines)
-          printf '%s\n' "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/my_ec2_key
-          chmod 600 ~/.ssh/my_ec2_key
+          sudo printf '%s\n' "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/my_ec2_key
+          sudo chmod 600 ~/.ssh/my_ec2_key
 
           # add host key to known_hosts to avoid interactive prompt
           if [ -n "${{ secrets.EC2_PUBLIC_IP }}" ]; then
-            ssh-keyscan -H "${{ secrets.EC2_PUBLIC_IP }}" >> ~/.ssh/known_hosts || true
-            chmod 600 ~/.ssh/known_hosts
+            sudo ssh-keyscan -H "${{ secrets.EC2_PUBLIC_IP }}" >> ~/.ssh/known_hosts || true
+            sudo chmod 600 ~/.ssh/known_hosts
           fi
 
       - name: Setup AWS Credentials
