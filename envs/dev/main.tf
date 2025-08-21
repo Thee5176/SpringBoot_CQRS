@@ -198,10 +198,10 @@ resource "aws_db_instance" "web_db" {
   instance_class         = "db.t3.micro"
   engine                 = "postgres"
   engine_version         = "16.6"
-  allocated_storage      = 20
-  username               = "web_admin"
+  allocated_storage      = 5
+  username               = var.db_username
   password               = var.db_password
-  db_name                = "record"
+  db_name                = var.db_schema
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.web_db_subnets.name
   parameter_group_name   = aws_db_parameter_group.web_db_parameter_group.name
