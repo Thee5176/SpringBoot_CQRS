@@ -43,10 +43,10 @@ jobs:
       - name: Apply Terraform and Deliver Code to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ec2_key ec2-user@${{ secrets.EC2_PUBLIC_IP }} <<EOF
-            echo "--- Checkout Latest Commit on branch ${{ github.event.workflow_run.head_branch }}: ---"
+            echo "--- Checkout Latest Commit on branch ${{ github.ref_name }}: ---"
             cd SpringBoot_CQRS
             git sparse-checkout set docker --no-cone
-            git checkout ${{ github.event.workflow_run.head_branch }}
+            git checkout ${{ github.ref_name }}
             
             echo "--- Setup Environment Variables: ---"
             echo "DB_URL=${{ secrets.DB_URL }}"           >> .env
