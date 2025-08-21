@@ -20,6 +20,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Set up SSH Private Key
+        run: |
+          mkdir ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/my_ec2_key
       - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -28,7 +32,7 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
       - name: Apply Terraform and Deliver Code to EC2
         run: |
-          ssh -i ~/.ssh/my_ec2_key ec2-user@$${{ secrets.EC2_PUBLIC_IP }} <<EOF
+          ssh -i ~/.ssh/my_ec2_key ec2-user@${{ secrets.EC2_PUBLIC_IP }} <<EOF
             echo "--- Clone Repository: ---"
             # only checkout the docker directory based on the workflow branch
             git clone https://github.com/Thee5176/SpringBoot_CQRS --no-checkout
