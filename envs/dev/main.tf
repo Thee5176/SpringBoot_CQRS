@@ -10,7 +10,7 @@ resource "aws_vpc" "main_vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "web-network", 
+    Name = "web-network",
     Name = "project:accounting-cqrs-project"
   }
 }
@@ -20,7 +20,7 @@ resource "aws_internet_gateway" "main_igw" {
   vpc_id     = aws_vpc.main_vpc.id
   depends_on = [aws_vpc.main_vpc]
   tags = {
-    Name = "web-network", 
+    Name = "web-network",
     Name = "project:accounting-cqrs-project"
   }
 }
@@ -29,7 +29,7 @@ resource "aws_internet_gateway" "main_igw" {
 resource "aws_route_table" "public_route" {
   vpc_id = aws_vpc.main_vpc.id
   tags = {
-    Name = "web-network", 
+    Name = "web-network",
     Name = "project:accounting-cqrs-project"
   }
 }
@@ -65,7 +65,7 @@ resource "aws_subnet" "server_subnet" {
   availability_zone = "ap-northeast-1a"
 
   tags = {
-    Name = "web-server", 
+    Name = "web-server",
     Name = "project:accounting-cqrs-project"
   }
 }
@@ -96,7 +96,7 @@ resource "aws_instance" "web_server" {
   EOF
 
   tags = {
-    Name = "web-server", 
+    Name = "web-server",
     Name = "project:accounting-cqrs-project"
   }
 }
@@ -138,7 +138,7 @@ resource "aws_security_group" "web_sg" {
   }
 
   tags = {
-    Name = "web-server", 
+    Name = "web-server",
     Name = "project:accounting-cqrs-project"
   }
 }
@@ -147,19 +147,19 @@ resource "aws_security_group" "web_sg" {
 data "aws_key_pair" "deployment_key" { # Manually created on aws console
   key_name = "github_workflow_key"
   tags = {
-    Name = "web-server", 
+    Name = "web-server",
     Name = "project:accounting-cqrs-project"
   }
 }
 
-# EC2 Elastic IP : Set static IP address
-resource "aws_eip" "web_eip" {
-  instance = aws_instance.web_server.id
-  domain   = "vpc"
-  tags = {
-    Name = "web-server", 
-    Name = "project:accounting-cqrs-project"  }
-}
+# # EC2 Elastic IP : Set static IP address
+# resource "aws_eip" "web_eip" {
+#   instance = aws_instance.web_server.id
+#   domain   = "vpc"
+#   tags = {
+#     Name = "web-server", 
+#     Name = "project:accounting-cqrs-project"  }
+# }
 
 ##------------------------RDS Instance---------------------------
 
@@ -172,7 +172,7 @@ resource "aws_db_subnet_group" "my_db_subnet_group" {
   ]
 
   tags = {
-    Name = "web-db", 
+    Name = "web-db",
     Name = "project:accounting-cqrs-project"
   }
 }
@@ -183,7 +183,7 @@ resource "aws_subnet" "db_subnet_1" {
   availability_zone = "ap-northeast-1a"
 
   tags = {
-    Name = "web-db", 
+    Name = "web-db",
     Name = "project:accounting-cqrs-project"
   }
 }
@@ -193,7 +193,7 @@ resource "aws_subnet" "db_subnet_2" {
   availability_zone = "ap-northeast-1d"
 
   tags = {
-    Name = "web-db", 
+    Name = "web-db",
     Name = "project:accounting-cqrs-project"
   }
 }
@@ -210,7 +210,7 @@ resource "aws_db_parameter_group" "my_db_parameter_group" {
   }
 
   tags = {
-    Name = "web-db-group", 
+    Name = "web-db-group",
     Name = "project:accounting-cqrs-project"
   }
 }
@@ -232,8 +232,8 @@ resource "aws_db_instance" "web_db" {
   skip_final_snapshot    = true
 
   tags = {
-    Name = "web-db", 
-    Name = "project:accounting-cqrs-project"  }
+    Name = "web-db",
+  Name = "project:accounting-cqrs-project" }
 }
 
 # DB Security Group
@@ -257,7 +257,7 @@ resource "aws_security_group" "db_sg" {
   }
 
   tags = {
-    Name = "web-db", 
+    Name = "web-db",
     Name = "project:accounting-cqrs-project"
   }
 }

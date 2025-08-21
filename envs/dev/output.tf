@@ -15,5 +15,5 @@ output "rds_instance_id" {
 }
 output "rds_endpoint" {
   description = "RDS access endpoint"
-  value = aws_db_instance.web_db.endpoint
+  value       = aws_db_instance.web_db.endpoint
 }
