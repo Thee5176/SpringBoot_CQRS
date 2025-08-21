@@ -35,14 +35,13 @@ jobs:
       - name: build Command Unit
         run: |
           chmod +x mvnw
-          ./mvnw 
-          ./mvnw clean package -DskipTests
+          ./mvnw clean package
         working-directory: springboot_cqrs_command
 
       - name: Build Query Unit 
         run: |
-            chmod +x mvnw
-            ./mvnw clean package -DskipTests
+          chmod +x mvnw
+          ./mvnw clean package
         working-directory: springboot_cqrs_query
 
       - name: Start All Services
