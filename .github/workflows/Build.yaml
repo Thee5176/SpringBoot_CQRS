@@ -35,7 +35,7 @@ jobs:
       - name: build Command Unit
         run: |
           chmod +x mvnw
-          ./mvnw flyway:migrate
+          ./mvnw 
           ./mvnw clean package -DskipTests
         working-directory: springboot_cqrs_command
 

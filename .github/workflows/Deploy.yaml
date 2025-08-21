@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup AWS Credential
+      - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -28,11 +28,12 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
       - name: Apply Terraform and Deliver Code to EC2
         env:
+          PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
           DB_URL: ${{ secrets.DB_URL }}
           DB_USERNAME: ${{ vars.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
-          ssh -i ~/.ssh/my_ec2_key ec2-user@${{ secrets.EC2_PUBLIC_IP }} <<EOF
+          ssh -i ~/.ssh/my_ec2_key ec2-user@$${PUBLIC_IP} <<EOF
             echo "--- Clone Repository: ---"
             git clone https://github.com/Thee5176/SpringBoot_CQRS
             cd SpringBoot_CQRS
