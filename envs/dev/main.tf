@@ -126,7 +126,7 @@ resource "aws_security_group" "web_sg" {
   ingress {
     description = "HTTP from anywhere"
     from_port   = 80
-    to_port     = 5743 # Frontend Port
+    to_port     = 8183 # Docker Frontend Port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

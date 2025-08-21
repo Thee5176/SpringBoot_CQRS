@@ -97,17 +97,16 @@ jobs:
             git checkout ${{ github.head_ref }}
             
             echo "--- Setup Environment Variables: ---"
-            echo "DB_URL=${{ secrets.DB_URL }}"           >> .env
+            echo "DB_URL=${{ secrets.DB_URL }}"           > .env
             echo "DB_USERNAME=${{ vars.DB_USER }}"        >> .env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-            set -a; source ./.env; set +a;
-            ls -a -L 2
+            tree -a -L 2
             
             echo "--- Pulling latest Docker images: ---"
             sudo service docker start
             
-            docker-compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml pull
-            docker-compose -f docker/compose.yaml -f docker/docker-compose.prod.yaml up -d --no-build
+            docker-compose -f docker/compose.yaml -f docker/docker-compose.override.yaml pull
+            docker-compose -f docker/compose.yaml -f docker/docker-compose.override.yaml up -d --no-build
 
             echo "--- Verifying running containers: ---"
             docker-compose ls
