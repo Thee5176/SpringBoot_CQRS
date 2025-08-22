@@ -91,26 +91,25 @@ jobs:
       - name: Deliver Code to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ec2_key ec2-user@${{ secrets.EC2_PUBLIC_IP }} <<EOF
-            echo "--- Checkout Latest Commit on branch ${{ github.head_ref }}: ---"
+            echo "--- Checkout Latest Compose File from Branch ${{ github.head_ref }}: ---"
             cd SpringBoot_CQRS
-            git sparse-checkout set docker --no-cone
-            git checkout ${{ github.head_ref }}
+            git pull
             
-            echo "--- Setup Environment Variables: ---"
-            echo "DB_URL=${{ secrets.DB_URL }}"           > .env
-            echo "DB_USERNAME=${{ vars.DB_USER }}"        >> .env
-            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+            echo "--- Setup Environment Variables outside git repo: ---"
+            echo "DB_URL=${{ secrets.DB_URL }}"           >  ~/.env
+            echo "DB_USERNAME=${{ vars.DB_USER }}"        >> ~/.env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ~/.env
             ln -s .env env.properties
             
             echo "--- Pulling latest Docker images: ---"
             sudo service docker start
-            
             docker-compose -f docker/compose.yaml -f docker/docker-compose.override.yaml pull
             docker-compose -f docker/compose.yaml -f docker/docker-compose.override.yaml start
 
-            echo "--- Verifying running containers: ---"
-            docker-compose ls
-
+            echo "--- Clean up Environment File ---"
+            echo " " > ~/.env
+            rm ~/env.properties
+            
             echo "--- Deployment complete. ---"
           EOF
         working-directory: envs/dev
