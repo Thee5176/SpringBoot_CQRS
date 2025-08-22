@@ -2,18 +2,10 @@ services:
   command_service:
     build: ../springboot_cqrs_command/.
     image: thee5176/springboot_cqrs_command:latest
-    environment:
-      - DB_URL
-      - DB_USERNAME
-      - DB_PASSWORD
 
   query_service:
     build: ../springboot_cqrs_query/.
     image: thee5176/springboot_cqrs_query:latest
-    environment:
-      - DB_URL
-      - DB_USERNAME
-      - DB_PASSWORD
 
   frontend_service:
     build: ../react_mui_cqrs/.
