@@ -92,6 +92,10 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ec2_key ec2-user@${{ secrets.EC2_PUBLIC_IP }} <<EOF
           
+            echo "--- Checkout Latest Compose File from Branch ${{ github.head_ref }}: ---"
+            cd SpringBoot_CQRS
+            git pull origin ${{ github.head_ref }}
+          
             echo "--- Setup Environment Variables outside git repo: ---"
             echo "DB_URL=${{ secrets.DB_URL }}"           >  ~/.env
             echo "DB_USERNAME=${{ vars.DB_USER }}"        >> ~/.env
@@ -99,10 +103,7 @@ jobs:
             echo "VITE_HOST_IP=${{ secrets.EC2_PUBLIC_IP }}" >> ~/.env
             echo "VITE_COMMAND_PORT=8181"                 >> ~/.env
             echo "VITE_QUERY_PORT=8182"                   >> ~/.env
-            
-            echo "--- Checkout Latest Compose File from Branch ${{ github.head_ref }}: ---"
-            cd SpringBoot_CQRS
-            git pull origin ${{ github.head_ref }}
+            ln -s ~/.env ./env.properties
 
             echo "--- Pulling latest Docker images: ---"
             sudo service docker start
