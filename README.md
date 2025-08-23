@@ -33,17 +33,15 @@ cd SpringBoot_CQRS
 #2 make migration, build process
 
 ##2.1 Command Unit: spin up postgres container and set up DB
-docker compose up postgres -d --build
 cd springboot_cqrs_command
 chmod +x mvnw
-./mvnw flyway:migrate
-./mvnw clean package -DskipTests
+./mvnw clean package
 cd ..
 
 ##2.2 Query Unit:
 cd springboot_cqrs_query
 chmod +x mvnw
-./mvnw clean package -DskipTests
+./mvnw clean package
 cd ..
 
 #3 Start All Service
