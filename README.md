@@ -1,4 +1,20 @@
-# SpringBoot_CQRS
+# Accounting_CQRS_Project
+
+## Technologies:
+### Backend:  Springboot/Java
+- DB Migration Management: Flyway
+- DB Schema to Pojos class autogen: JOOQ
+- setup profile and manage deployment setting
+- logging level and log file management
+### Frontend: React/TypeScript
+- Multiple SPA Pages: React Router
+- Form Management with Dynamic input field: ReactHookForm
+- MUI Component Library
+### DevOps Tools
+- set up AWS Cloud Service with IaC tools: [Terraform and HCP](https://app.terraform.io/app/thee5176/workspaces/AWS_for_Accounting_Project)
+- store Build Image and Deployment with Container Management tools: [Docker and Dockerhub](https://hub.docker.com/repositories/thee5176)
+- explore Git tools: Submodule, Flow, Stash-checkout
+- CI/CD pipeline: Github Workflow
 
 ## Table of Content
 1. [install and run process](#install-and-run-process)
