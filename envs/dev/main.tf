@@ -10,8 +10,8 @@ resource "aws_vpc" "main_vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "web-network",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-network",
+    project = "accounting-cqrs-project"
   }
 }
 
@@ -20,8 +20,8 @@ resource "aws_internet_gateway" "main_igw" {
   vpc_id     = aws_vpc.main_vpc.id
   depends_on = [aws_vpc.main_vpc]
   tags = {
-    Name = "web-network",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-network",
+    project = "accounting-cqrs-project"
   }
 }
 
@@ -29,8 +29,8 @@ resource "aws_internet_gateway" "main_igw" {
 resource "aws_route_table" "public_route" {
   vpc_id = aws_vpc.main_vpc.id
   tags = {
-    Name = "web-network",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-network",
+    project = "accounting-cqrs-project"
   }
 }
 
@@ -41,13 +41,24 @@ resource "aws_route_table_association" "public_subnet_association" {
 }
 
 # RDS Table Association : connect RDS subnet with public route table
+resource "aws_route_table" "private_route" {
+  vpc_id = aws_vpc.main_vpc.id
+
+  tags = {
+    Name    = "private-route"
+    project = "accounting-cqrs-project"
+  }
+}
+
+# RDS Private Table Association
 resource "aws_route_table_association" "db_subnet1_assoc" {
   subnet_id      = aws_subnet.db_subnet_1.id
-  route_table_id = aws_route_table.public_route.id
+  route_table_id = aws_route_table.private_route.id
 }
+
 resource "aws_route_table_association" "db_subnet2_assoc" {
   subnet_id      = aws_subnet.db_subnet_2.id
-  route_table_id = aws_route_table.public_route.id
+  route_table_id = aws_route_table.private_route.id
 }
 
 # Route : connect internet gateway with route table
@@ -65,8 +76,8 @@ resource "aws_subnet" "server_subnet" {
   availability_zone = "ap-northeast-1a"
 
   tags = {
-    Name = "web-server",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-server",
+    project = "accounting-cqrs-project"
   }
 }
 
@@ -105,8 +116,8 @@ resource "aws_instance" "web_server" {
   EOF
 
   tags = {
-    Name = "web-server",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-server",
+    project = "accounting-cqrs-project"
   }
 }
 
@@ -116,7 +127,7 @@ resource "aws_security_group" "web_sg" {
   description = "Allow SSH and HTTP inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
   ingress {
-    description = "SSH from github"
+    description = "SSH from anywhere"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -126,7 +137,7 @@ resource "aws_security_group" "web_sg" {
   ingress {
     description = "HTTP from anywhere"
     from_port   = 80
-    to_port     = 8183 # Docker Frontend Port
+    to_port     = 80 # Docker Frontend Port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -147,8 +158,8 @@ resource "aws_security_group" "web_sg" {
   }
 
   tags = {
-    Name = "web-server",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-server",
+    project = "accounting-cqrs-project"
   }
 }
 
@@ -156,8 +167,8 @@ resource "aws_security_group" "web_sg" {
 data "aws_key_pair" "deployment_key" { # Manually created on aws console
   key_name = "github_workflow_key"
   tags = {
-    Name = "web-server",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-server",
+    project = "accounting-cqrs-project"
   }
 }
 
@@ -167,7 +178,7 @@ data "aws_key_pair" "deployment_key" { # Manually created on aws console
 #   domain   = "vpc"
 #   tags = {
 #     Name = "web-server", 
-#     Name = "project:accounting-cqrs-project"  }
+#     project = "accounting-cqrs-project"  }
 # }
 
 ##------------------------RDS Instance---------------------------
@@ -181,8 +192,8 @@ resource "aws_db_subnet_group" "my_db_subnet_group" {
   ]
 
   tags = {
-    Name = "web-db",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-db",
+    project = "accounting-cqrs-project"
   }
 }
 
@@ -192,21 +203,21 @@ resource "aws_subnet" "db_subnet_1" {
   availability_zone = "ap-northeast-1a"
 
   tags = {
-    Name = "web-db",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-db",
+    project = "accounting-cqrs-project"
   }
 }
+
 resource "aws_subnet" "db_subnet_2" {
   vpc_id            = aws_vpc.main_vpc.id
   cidr_block        = "172.16.2.0/24"
-  availability_zone = "ap-northeast-1d"
+  availability_zone = "ap-northeast-1c"
 
   tags = {
-    Name = "web-db",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-db",
+    project = "accounting-cqrs-project"
   }
 }
-
 # DB_parameter
 resource "aws_db_parameter_group" "my_db_parameter_group" {
   name        = "my-db-parameter-group"
@@ -219,8 +230,8 @@ resource "aws_db_parameter_group" "my_db_parameter_group" {
   }
 
   tags = {
-    Name = "web-db-group",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-db-group",
+    project = "accounting-cqrs-project"
   }
 }
 
@@ -237,12 +248,12 @@ resource "aws_db_instance" "web_db" {
   vpc_security_group_ids = [aws_security_group.db_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.my_db_subnet_group.name
   parameter_group_name   = aws_db_parameter_group.my_db_parameter_group.name
-  publicly_accessible    = true
+  publicly_accessible    = false
   skip_final_snapshot    = true
 
   tags = {
     Name = "web-db",
-  Name = "project:accounting-cqrs-project" }
+  project = "accounting-cqrs-project" }
 }
 
 # DB Security Group
@@ -251,13 +262,6 @@ resource "aws_security_group" "db_sg" {
   description = "Allow SSH and HTTP inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
 
-  ingress {
-    description = "Postgresql connection"
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
   egress {
     from_port   = 0
     to_port     = 0
@@ -266,7 +270,18 @@ resource "aws_security_group" "db_sg" {
   }
 
   tags = {
-    Name = "web-db",
-    Name = "project:accounting-cqrs-project"
+    Name    = "web-db",
+    project = "accounting-cqrs-project"
   }
+}
+
+# Ingress Rules
+resource "aws_security_group_rule" "allow_ec2_to_rds" {
+  type                     = "ingress"
+  description              = "Allow DB access from web servers"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.db_sg.id
+  source_security_group_id = aws_security_group.web_sg.id
 }

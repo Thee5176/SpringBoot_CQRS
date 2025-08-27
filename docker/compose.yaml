@@ -18,7 +18,7 @@ services:
   frontend_service:
     container_name: react_mui_cqrs
     ports:
-    - 8183:5173
+    - 80:5173
     networks:
       - frontend
 
