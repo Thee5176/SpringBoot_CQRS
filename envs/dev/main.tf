@@ -34,31 +34,22 @@ resource "aws_route_table" "public_route" {
   }
 }
 
-# EC2 Table Association : connect EC2 subnet with public route table
+# Public Table Association : connect EC2 subnet with public route table
 resource "aws_route_table_association" "public_subnet_association" {
   subnet_id      = aws_subnet.server_subnet.id
   route_table_id = aws_route_table.public_route.id
 }
 
+
 # RDS Table Association : connect RDS subnet with public route table
-resource "aws_route_table" "private_route" {
-  vpc_id = aws_vpc.main_vpc.id
-
-  tags = {
-    Name    = "private-route"
-    project = "accounting-cqrs-project"
-  }
-}
-
-# RDS Private Table Association
 resource "aws_route_table_association" "db_subnet1_assoc" {
   subnet_id      = aws_subnet.db_subnet_1.id
-  route_table_id = aws_route_table.private_route.id
+  route_table_id = aws_route_table.public_route.id
 }
 
 resource "aws_route_table_association" "db_subnet2_assoc" {
   subnet_id      = aws_subnet.db_subnet_2.id
-  route_table_id = aws_route_table.private_route.id
+  route_table_id = aws_route_table.public_route.id
 }
 
 # Route : connect internet gateway with route table
@@ -188,8 +179,6 @@ data "aws_key_pair" "deployment_key" { # Manually created on aws console
 ##------------------------RDS Instance---------------------------
 
 # DB Subnet Group : 2 or more subnets in different AZ
-# DB Subnet Group : 2 or more subnets in different AZ
-# Add depends_on to ensure VPC is created first before subnets
 resource "aws_db_subnet_group" "my_db_subnet_group" {
   name = "db-subnet-group"
   subnet_ids = [
@@ -261,7 +250,7 @@ resource "aws_db_instance" "web_db" {
   vpc_security_group_ids = [aws_security_group.db_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.my_db_subnet_group.name
   parameter_group_name   = aws_db_parameter_group.my_db_parameter_group.name
-  publicly_accessible    = false
+  publicly_accessible    = true
   skip_final_snapshot    = true
 
   tags = {
@@ -274,6 +263,14 @@ resource "aws_security_group" "db_sg" {
   name        = "web-db-sg"
   description = "Allow SSH and HTTP inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
+
+  ingress {
+    description = "Allow DB access from anywhere"
+    from_port                = 5432
+    to_port                  = 5432
+    protocol                 = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   egress {
     from_port   = 0
@@ -288,10 +285,29 @@ resource "aws_security_group" "db_sg" {
   }
 }
 
+# --------------------Private RDS Setup with AWS CI/CD----------------------------
+
+# AWS CodeBuild
+# https://docs.aws.amazon.com/codebuild/latest/userguide/action-runner.html
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codebuild_project
+
+# AWS CodeDeploy
+# 
+
+# # Private Route Table (No Table Associate)
+# resource "aws_route_table" "private_route" {
+#   vpc_id = aws_vpc.main_vpc.id
+
+#   tags = {
+#     Name    = "private-route"
+#     project = "accounting-cqrs-project"
+#   }
+# }
+
 # Ingress Rules
 resource "aws_security_group_rule" "allow_ec2_to_rds" {
   type                     = "ingress"
-  description              = "Allow DB access from web servers"
+  description = "Allow DB access from anywhere web servers"
   from_port                = 5432
   to_port                  = 5432
   protocol                 = "tcp"
