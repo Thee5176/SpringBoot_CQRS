@@ -9,12 +9,6 @@ variable "aws_secret_key" {
   type        = string
   sensitive   = true
 }
-
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-  default     = "ap-northeast-1"
-}
 variable "db_username" {
   description = "RDS root username for the database"
   type        = string

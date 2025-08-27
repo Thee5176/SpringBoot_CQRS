@@ -97,7 +97,7 @@ resource "aws_instance" "web_server" {
     sudo yum update -y
 
     # Install Git
-    sudo yum install git
+    sudo yum install -y git
 
     # Install Docker and Docker Compose
     sudo yum install -y docker
@@ -110,9 +110,13 @@ resource "aws_instance" "web_server" {
     docker-compose --version
 
     # Clone the repository and checkout the docker directory
-      git clone https://github.com/Thee5176/SpringBoot_CQRS --no-checkout
-      cd SpringBoot_CQRS
-      git sparse-checkout set docker --no-cone
+    git clone https://github.com/Thee5176/SpringBoot_CQRS --no-checkout
+    cd SpringBoot_CQRS
+    git sparse-checkout set docker --no-cone
+
+    # Setup .env and env.properties file
+    touch ~/.env
+    ln -s ~/.env ~/SpringBoot_CQRS/env.properties
   EOF
 
   tags = {
@@ -184,19 +188,27 @@ data "aws_key_pair" "deployment_key" { # Manually created on aws console
 ##------------------------RDS Instance---------------------------
 
 # DB Subnet Group : 2 or more subnets in different AZ
+# DB Subnet Group : 2 or more subnets in different AZ
+# Add depends_on to ensure VPC is created first before subnets
 resource "aws_db_subnet_group" "my_db_subnet_group" {
-  name = "my-db-subnet-group"
+  name = "db-subnet-group"
   subnet_ids = [
     aws_subnet.db_subnet_1.id,
     aws_subnet.db_subnet_2.id
   ]
+  depends_on = [aws_vpc.main_vpc]
 
   tags = {
     Name    = "web-db",
     project = "accounting-cqrs-project"
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
+# Add depends_on to ensure VPC exists before creating subnet
 resource "aws_subnet" "db_subnet_1" {
   vpc_id            = aws_vpc.main_vpc.id
   cidr_block        = "172.16.1.0/24"
@@ -208,6 +220,7 @@ resource "aws_subnet" "db_subnet_1" {
   }
 }
 
+# Add depends_on to ensure VPC exists before creating subnet
 resource "aws_subnet" "db_subnet_2" {
   vpc_id            = aws_vpc.main_vpc.id
   cidr_block        = "172.16.2.0/24"
