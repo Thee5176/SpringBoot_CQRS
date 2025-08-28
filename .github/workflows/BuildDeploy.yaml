@@ -92,6 +92,7 @@ jobs:
           
             echo "--- Checkout Latest Compose File from Branch ${{ github.head_ref }}: ---"
             cd SpringBoot_CQRS
+            git reset --hard HEAD
             git pull origin ${{ github.head_ref }}
           
             echo "--- Setup Environment Variables outside git repo: ---"
