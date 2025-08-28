@@ -9,5 +9,3 @@ services:
 
   frontend_service:
     build: ../react_mui_cqrs/.
-    env_file:
-      - ../env.properties
