@@ -11,5 +11,7 @@ services:
 
   frontend_service:
     build: ../react_mui_cqrs/.
-    env_file:
-      - ../env.properties
+    environment:
+      - VITE_HOST_IP=52.69.143.11
+      - VITE_COMMAND_PORT=8181
+      - VITE_QUERY_PORT=8182
