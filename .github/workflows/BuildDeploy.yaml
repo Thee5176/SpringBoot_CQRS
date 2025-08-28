@@ -106,10 +106,7 @@ jobs:
             echo "--- Pulling latest Docker images: ---"
             sudo service docker start
             docker-compose -f docker/compose.yaml -f docker/docker-compose.override.yaml pull
-            docker-compose -f docker/compose.yaml -f docker/docker-compose.override.yaml up -d --remove-orphans
-
-            echo "--- Clean up Environment File ---"
-            echo " " > env.properties
+            docker-compose -f docker/compose.yaml -f docker/docker-compose.override.yaml up -d --force-recreate --remove-orphans
             
             echo "--- Deployment complete. ---"
           EOF
