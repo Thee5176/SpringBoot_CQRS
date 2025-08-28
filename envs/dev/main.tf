@@ -103,11 +103,7 @@ resource "aws_instance" "web_server" {
     # Clone the repository and checkout the docker directory
     git clone https://github.com/Thee5176/SpringBoot_CQRS --no-checkout
     cd SpringBoot_CQRS
-    git sparse-checkout set docker --no-cone
-
-    # Setup .env and env.properties file
-    touch ~/.env
-    ln -s ~/.env ~/SpringBoot_CQRS/env.properties
+    git sparse-checkout set docker react_mui_cqrs --no-cone
   EOF
 
   tags = {
@@ -132,15 +128,7 @@ resource "aws_security_group" "web_sg" {
   ingress {
     description = "HTTP from anywhere"
     from_port   = 80
-    to_port     = 80 # Docker Frontend Port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "HTTPS from anywhere"
-    from_port   = 443
-    to_port     = 443
+    to_port     = 80                       # Frontend Port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -156,6 +144,26 @@ resource "aws_security_group" "web_sg" {
     Name    = "web-server",
     project = "accounting-cqrs-project"
   }
+}
+
+resource "aws_security_group_rule" "allow_command_service" {
+  type                     = "ingress"
+  description = "Allow incoming data fetch to command service"
+  from_port                = 8181               # Command Service Port
+  to_port                  = 8181
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.web_sg.id
+  cidr_blocks             = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "allow_query_service" {
+  type                     = "ingress"
+  description = "Allow incoming data fetch to query service"
+  from_port                = 8182               # Query Service Port
+  to_port                  = 8182
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.web_sg.id
+  cidr_blocks             = ["0.0.0.0/0"]
 }
 
 # EC2 SSH Key
