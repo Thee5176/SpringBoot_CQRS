@@ -128,11 +128,18 @@ resource "aws_security_group" "web_sg" {
   ingress {
     description = "HTTP from anywhere"
     from_port   = 80
-    to_port     = 80                       # Frontend Port
+    to_port     = 80 # Frontend Port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "Allow incoming data fetch to command service"
+    from_port   = 8181 # Command Service Port
+    to_port     = 8182 # Query Service Port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   egress {
     from_port   = 0
     to_port     = 0
@@ -144,26 +151,6 @@ resource "aws_security_group" "web_sg" {
     Name    = "web-server",
     project = "accounting-cqrs-project"
   }
-}
-
-resource "aws_security_group_rule" "allow_command_service" {
-  type                     = "ingress"
-  description = "Allow incoming data fetch to command service"
-  from_port                = 8181               # Command Service Port
-  to_port                  = 8181
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.web_sg.id
-  cidr_blocks             = ["0.0.0.0/0"]
-}
-
-resource "aws_security_group_rule" "allow_query_service" {
-  type                     = "ingress"
-  description = "Allow incoming data fetch to query service"
-  from_port                = 8182               # Query Service Port
-  to_port                  = 8182
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.web_sg.id
-  cidr_blocks             = ["0.0.0.0/0"]
 }
 
 # EC2 SSH Key
@@ -274,9 +261,9 @@ resource "aws_security_group" "db_sg" {
 
   ingress {
     description = "Allow DB access from anywhere"
-    from_port                = 5432
-    to_port                  = 5432
-    protocol                 = "tcp"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -315,7 +302,7 @@ resource "aws_security_group" "db_sg" {
 # Ingress Rules
 resource "aws_security_group_rule" "allow_ec2_to_rds" {
   type                     = "ingress"
-  description = "Allow DB access from anywhere web servers"
+  description              = "Allow DB access from anywhere web servers"
   from_port                = 5432
   to_port                  = 5432
   protocol                 = "tcp"

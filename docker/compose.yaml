@@ -8,10 +8,10 @@ services:
   query_service:
     container_name: springboot_cqrs_query
     ports:
-      - 8182:8081
+    - 8182:8081
 
 
   frontend_service:
     container_name: react_mui_cqrs
     ports:
-    - 80:5173
+    - 80:3000
