@@ -114,7 +114,6 @@ resource "aws_instance" "web_server" {
 
 # EC2 Security Group : allow access in instance level
 resource "aws_security_group" "web_sg" {
-  name        = "web-server-sg"
   description = "Allow SSH and HTTP inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
   ingress {
@@ -175,7 +174,6 @@ data "aws_key_pair" "deployment_key" { # Manually created on aws console
 
 # DB Subnet Group : 2 or more subnets in different AZ
 resource "aws_db_subnet_group" "my_db_subnet_group" {
-  name = "db-subnet-group"
   subnet_ids = [
     aws_subnet.db_subnet_1.id,
     aws_subnet.db_subnet_2.id
@@ -217,7 +215,6 @@ resource "aws_subnet" "db_subnet_2" {
 }
 # DB_parameter
 resource "aws_db_parameter_group" "my_db_parameter_group" {
-  name        = "my-db-parameter-group"
   description = "Parameter group for web database"
   family      = "postgres17"
 
@@ -234,7 +231,6 @@ resource "aws_db_parameter_group" "my_db_parameter_group" {
 
 # RDS
 resource "aws_db_instance" "web_db" {
-  identifier             = "web-db"
   instance_class         = "db.t3.micro"
   engine                 = "postgres"
   engine_version         = "17.4"
@@ -255,7 +251,6 @@ resource "aws_db_instance" "web_db" {
 
 # DB Security Group
 resource "aws_security_group" "db_sg" {
-  name        = "web-db-sg"
   description = "Allow SSH and HTTP inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
 

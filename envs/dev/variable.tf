@@ -26,13 +26,13 @@ variable "db_schema" {
   type        = string
   default     = "record"
 }
-variable "github_token" {
-  description = "GitHub token with repo and admin:repo_hook permissions"
-  type        = string
-  sensitive   = true
-}
 variable "github_owner" {
   description = "GitHub repository owner"
   type        = string
   default     = "Thee5176"
+}
+variable "github_token" {
+  description = "GitHub token with repo and admin:repo_hook permissions"
+  type        = string
+  sensitive   = true
 }
