@@ -154,17 +154,6 @@ sequenceDiagram
 
 ---
 
-## Frontend React Form
-
-| Feature                     | Description                                                                                                  | Reference Link                                                                                                                     |
-|----------------------------|--------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| Dynamic Component Combination | Use Atomic Design Pattern to break down complex components into simpler, maintainable ones                        | ![Atomic Design](https://github.com/user-attachments/assets/04133e47-ed58-4533-80f7-550c15ee9bc4)                                  |
-| Dynamically Add LedgerItems | Dynamically add new LedgerItems input fields                                                                 | - [LedgerItemInputField.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/index.tsx)<br>- [LedgerItemsFormTable.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/99129f8f92ce6f16994f2c5bc34de9fb2cbabeb6/src/components/LedgerItemsFormTable.tsx)<br>![Dynamic LedgerItems](https://github.com/user-attachments/assets/3de1e39d-5f7d-490a-82ad-9aa172664620) |
-| Fetch COA Select Field      | Fetch "Code of Account" select options from Query Service                                                    | [CoaField.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/LedgerItemInputField/CoaField.tsx) <br>![COA Fetch](https://github.com/user-attachments/assets/b30bbb36-a320-4f43-8d8d-2c7dca4c5596) |
-| React Hook Form Integration | Manage form submit function using React Hook Form's useForm hook                                            | [LedgerEntryForm.tsx](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx)<br>- [Confluence Report](https://thee5176.atlassian.net/wiki/spaces/~7120207a78457b1be14d1eb093ee37135d9fb6/pages/68026372/React+MUI#3.-Form-handling-with-React-Hook-Form) |
-| Validation & Error Message  | Validate input fields and display error messages before submission                                            | [Validation Example](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/pages/LedgerEntryForm.tsx)  |
-| Reusable Validation Component | Centralize validation error message display                                                                | [Error Message Component](https://github.com/Thee5176/React_MUI_Accounting_CQRS/blob/develop/src/components/ErrorAlert.tsx) <br>![Validation UI](https://github.com/user-attachments/assets/c10acabc-9434-4bc7-912d-6a02e190df8a) |
-
 ### Validation Condition and Error Message - Sequence Diagram
 
 ```mermaid
