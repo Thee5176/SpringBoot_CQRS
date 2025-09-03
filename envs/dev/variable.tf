@@ -9,12 +9,6 @@ variable "aws_secret_key" {
   type        = string
   sensitive   = true
 }
-
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-  default     = "ap-northeast-1"
-}
 variable "db_username" {
   description = "RDS root username for the database"
   type        = string
@@ -31,4 +25,14 @@ variable "db_schema" {
   description = "RDS database name to be created."
   type        = string
   default     = "record"
+}
+variable "github_owner" {
+  description = "GitHub repository owner"
+  type        = string
+  default     = "Thee5176"
+}
+variable "github_token" {
+  description = "GitHub token with repo and admin:repo_hook permissions"
+  type        = string
+  sensitive   = true
 }

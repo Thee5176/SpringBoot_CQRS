@@ -92,27 +92,24 @@ jobs:
           
             echo "--- Checkout Latest Compose File from Branch ${{ github.head_ref }}: ---"
             cd SpringBoot_CQRS
+            git reset --hard HEAD
             git pull origin ${{ github.head_ref }}
-          
+
             echo "--- Setup Environment Variables outside git repo: ---"
-            echo "DB_URL=${{ secrets.DB_URL }}"           >  ~/.env
-            echo "DB_USERNAME=${{ vars.DB_USER }}"        >> ~/.env
-            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ~/.env
-            echo "VITE_HOST_IP=${{ secrets.EC2_PUBLIC_IP }}" >> ~/.env
-            echo "VITE_COMMAND_PORT=8181"                 >> ~/.env
-            echo "VITE_QUERY_PORT=8182"                   >> ~/.env
+            echo "DB_URL=${{ secrets.DB_URL }}"           >  env.properties
+            echo "DB_USERNAME=${{ vars.DB_USER }}"        >> env.properties
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> env.properties
+            echo "VITE_HOST_IP=${{ secrets.EC2_PUBLIC_IP }}" >> env.properties
+            echo "VITE_COMMAND_PORT=8181"                 >> env.properties
+            echo "VITE_QUERY_PORT=8182"                   >> env.properties
 
             echo "--- Pulling latest Docker images: ---"
             sudo service docker start
             docker-compose -f docker/compose.yaml -f docker/docker-compose.override.yaml pull
-            docker-compose -f docker/compose.yaml -f docker/docker-compose.override.yaml start
-
-            echo "--- Clean up Environment File ---"
-            echo " " > ~/.env
+            docker-compose -f docker/compose.yaml -f docker/docker-compose.override.yaml up -d --force-recreate --remove-orphans
             
             echo "--- Deployment complete. ---"
           EOF
-        working-directory: envs/dev
       
       - name: Cleanup SSH private key
         if: always()
